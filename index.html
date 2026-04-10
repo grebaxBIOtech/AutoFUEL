@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Cuentas - Grifo</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Exo+2:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2230;
+    --surface3: #21293a;
+    --border: #30363d;
+    --accent: #f97316;
+    --accent2: #fb923c;
+    --accent-dim: rgba(249,115,22,0.15);
+    --blue: #38bdf8;
+    --blue-dim: rgba(56,189,248,0.12);
+    --green: #4ade80;
+    --green-dim: rgba(74,222,128,0.12);
+    --red: #f87171;
+    --red-dim: rgba(248,113,113,0.12);
+    --yellow: #facc15;
+    --text: #e6edf3;
+    --text2: #8b949e;
+    --text3: #6e7681;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Exo 2',sans-serif; min-height:100vh; }
+
+  /* TABS */
+  .app-header {
+    background: linear-gradient(135deg, #0d1117 0%, #1a1f2e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    position: sticky; top:0; z-index:100;
+  }
+  .app-logo {
+    font-family:'Rajdhani',sans-serif;
+    font-weight:700; font-size:1.4rem;
+    color:var(--accent);
+    letter-spacing:2px;
+    padding: 16px 24px 16px 0;
+    border-right: 1px solid var(--border);
+    margin-right: 8px;
+    text-transform:uppercase;
+  }
+  .app-logo span { color:var(--text2); font-weight:400; }
+  .tab-btn {
+    padding: 18px 20px;
+    background:none; border:none;
+    color:var(--text2); cursor:pointer;
+    font-family:'Exo 2',sans-serif; font-size:.9rem; font-weight:600;
+    letter-spacing:.5px; text-transform:uppercase;
+    border-bottom: 3px solid transparent;
+    transition: all .2s;
+  }
+  .tab-btn:hover { color:var(--text); }
+  .tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); }
+
+  /* CONTENT */
+  .tab-content { display:none; }
+  .tab-content.active { display:block; }
+
+  /* ============== TURNO TAB ============== */
+  .turno-layout {
+    max-width: 1400px; margin:0 auto; padding:24px;
+    display:grid; grid-template-columns: 320px 1fr; gap:24px;
+  }
+
+  /* SIDEBAR */
+  .sidebar { display:flex; flex-direction:column; gap:16px; }
+  .card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; padding:20px;
+  }
+  .card-title {
+    font-family:'Rajdhani',sans-serif; font-weight:700;
+    font-size:1rem; letter-spacing:1.5px; text-transform:uppercase;
+    color:var(--accent); margin-bottom:16px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .card-title::before {
+    content:''; display:inline-block;
+    width:3px; height:14px; background:var(--accent); border-radius:2px;
+  }
+
+  .form-group { margin-bottom:14px; }
+  .form-label {
+    display:block; font-size:.75rem; font-weight:600;
+    letter-spacing:.8px; text-transform:uppercase;
+    color:var(--text2); margin-bottom:6px;
+  }
+  select, input[type="date"], input[type="number"], input[type="text"] {
+    width:100%; background:var(--surface2);
+    border:1px solid var(--border); border-radius:8px;
+    color:var(--text); padding:10px 12px;
+    font-family:'DM Mono',monospace; font-size:.9rem;
+    transition: border-color .2s, box-shadow .2s;
+    outline:none;
+  }
+  select:focus, input:focus {
+    border-color:var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-dim);
+  }
+  select option { background:var(--surface2); }
+
+  .turno-toggle {
+    display:grid; grid-template-columns:1fr 1fr; gap:8px;
+  }
+  .turno-btn {
+    padding:10px; border:1px solid var(--border);
+    border-radius:8px; background:var(--surface2);
+    color:var(--text2); cursor:pointer; text-align:center;
+    font-family:'Exo 2',sans-serif; font-weight:600; font-size:.85rem;
+    letter-spacing:.5px; text-transform:uppercase;
+    transition: all .2s;
+  }
+  .turno-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .turno-btn.active { background:var(--accent); border-color:var(--accent); color:white; }
+
+  /* MAIN CONTENT */
+  .main-area { display:flex; flex-direction:column; gap:20px; }
+
+  /* Machines section */
+  .machines-header {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:16px;
+  }
+  .section-title {
+    font-family:'Rajdhani',sans-serif; font-weight:700;
+    font-size:1.1rem; letter-spacing:1.5px; text-transform:uppercase;
+    color:var(--text);
+  }
+  .badge {
+    background:var(--accent-dim); color:var(--accent);
+    padding:3px 10px; border-radius:20px;
+    font-size:.75rem; font-weight:700; letter-spacing:.5px;
+  }
+
+  .machines-grid {
+    display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap:12px;
+  }
+  .machine-card {
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:10px; padding:16px;
+    transition: border-color .2s;
+  }
+  .machine-card:hover { border-color:var(--accent); }
+  .machine-label {
+    font-family:'DM Mono',monospace; font-size:.8rem;
+    color:var(--text2); margin-bottom:10px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .machine-num {
+    background:var(--surface3); color:var(--accent);
+    padding:2px 8px; border-radius:4px;
+    font-weight:700; font-size:.85rem;
+  }
+  .machine-inputs { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .mini-label {
+    font-size:.7rem; color:var(--text3); margin-bottom:4px;
+    letter-spacing:.5px; text-transform:uppercase;
+  }
+  .diff-display {
+    background:var(--surface3); border:1px solid var(--border);
+    border-radius:6px; padding:8px 10px;
+    font-family:'DM Mono',monospace; font-size:.95rem;
+    color:var(--green); text-align:right; min-height:38px;
+    display:flex; align-items:center; justify-content:flex-end;
+  }
+  .diff-display.negative { color:var(--red); }
+
+  /* Totals */
+  .totals-row {
+    display:grid; grid-template-columns: repeat(3, 1fr); gap:16px;
+  }
+  .total-box {
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:10px; padding:16px; text-align:center;
+  }
+  .total-label {
+    font-size:.75rem; color:var(--text2);
+    text-transform:uppercase; letter-spacing:.8px; margin-bottom:8px;
+  }
+  .total-value {
+    font-family:'DM Mono',monospace; font-size:1.4rem;
+    font-weight:500; color:var(--blue);
+  }
+  .total-value.highlight { color:var(--accent); font-size:1.6rem; }
+
+  /* Encargado Section */
+  .enc-grid {
+    display:grid; grid-template-columns:1fr 1fr; gap:16px;
+  }
+  .enc-card {
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:10px; padding:16px;
+  }
+  .enc-title {
+    font-size:.75rem; text-transform:uppercase; letter-spacing:.8px;
+    color:var(--text2); margin-bottom:12px; font-weight:600;
+  }
+
+  /* Descuento */
+  .desc-box {
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:10px; padding:16px;
+  }
+  .desc-row {
+    display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;
+    align-items:end;
+  }
+  .desc-result {
+    background:var(--surface3); border:1px solid var(--border);
+    border-radius:8px; padding:10px 12px;
+    font-family:'DM Mono',monospace; font-size:1rem;
+    text-align:right;
+  }
+  .desc-result.positive { color:var(--green); border-color:rgba(74,222,128,.3); }
+  .desc-result.negative { color:var(--red); border-color:rgba(248,113,113,.3); }
+
+  /* Save button */
+  .btn-save {
+    width:100%; padding:14px;
+    background: linear-gradient(135deg, var(--accent), #ea580c);
+    border:none; border-radius:10px;
+    color:white; font-family:'Exo 2',sans-serif;
+    font-size:1rem; font-weight:700; letter-spacing:1px;
+    text-transform:uppercase; cursor:pointer;
+    transition: all .2s; box-shadow:0 4px 20px rgba(249,115,22,.3);
+  }
+  .btn-save:hover {
+    transform:translateY(-2px); box-shadow:0 8px 25px rgba(249,115,22,.4);
+  }
+  .btn-save:active { transform:translateY(0); }
+
+  /* ============== DESCUENTOS TAB ============== */
+  .desc-tab-layout {
+    max-width: 1400px; margin:0 auto; padding:24px;
+  }
+  .desc-filter-bar {
+    display:flex; gap:12px; align-items:center;
+    margin-bottom:24px; flex-wrap:wrap;
+  }
+  .btn-filter {
+    padding:8px 16px; border:1px solid var(--border);
+    border-radius:8px; background:var(--surface);
+    color:var(--text2); cursor:pointer;
+    font-family:'Exo 2',sans-serif; font-size:.85rem; font-weight:600;
+    transition:all .2s;
+  }
+  .btn-filter:hover { border-color:var(--accent); color:var(--accent); }
+  .btn-filter.active { background:var(--accent); border-color:var(--accent); color:white; }
+
+  .workers-grid {
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+    gap:16px;
+  }
+  .worker-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; padding:20px; position:relative; overflow:hidden;
+  }
+  .worker-card::before {
+    content:''; position:absolute; top:0; left:0;
+    width:4px; height:100%;
+    background: linear-gradient(180deg, var(--accent), var(--accent2));
+  }
+  .worker-name {
+    font-family:'Rajdhani',sans-serif; font-weight:700;
+    font-size:1.2rem; letter-spacing:1px; text-transform:uppercase;
+    color:var(--text); margin-bottom:12px; padding-left:4px;
+  }
+  .worker-sede {
+    font-size:.7rem; color:var(--text3); text-transform:uppercase;
+    letter-spacing:.8px; margin-bottom:4px;
+  }
+  .stat-row {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:6px 0; border-bottom:1px solid var(--border);
+  }
+  .stat-row:last-child { border-bottom:none; }
+  .stat-key { font-size:.8rem; color:var(--text2); }
+  .stat-val {
+    font-family:'DM Mono',monospace; font-size:.85rem;
+    font-weight:500;
+  }
+  .stat-val.pos { color:var(--green); }
+  .stat-val.neg { color:var(--red); }
+  .stat-val.neu { color:var(--text2); }
+  .balance-total {
+    margin-top:12px; padding:10px 12px;
+    border-radius:8px; text-align:right;
+    font-family:'DM Mono',monospace; font-size:1.1rem; font-weight:500;
+  }
+  .balance-total.pos { background:var(--green-dim); color:var(--green); }
+  .balance-total.neg { background:var(--red-dim); color:var(--red); }
+  .balance-total.zero { background:var(--surface2); color:var(--text2); }
+
+  /* HISTORIAL TAB */
+  .hist-layout {
+    max-width: 1400px; margin:0 auto; padding:24px;
+  }
+  .hist-table-wrap {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; overflow:auto;
+  }
+  table { width:100%; border-collapse:collapse; }
+  thead { background:var(--surface2); }
+  th {
+    padding:12px 16px; text-align:left;
+    font-size:.75rem; text-transform:uppercase; letter-spacing:.8px;
+    color:var(--text2); font-weight:600; border-bottom:1px solid var(--border);
+    white-space:nowrap;
+  }
+  td {
+    padding:11px 16px; border-bottom:1px solid rgba(48,54,61,.5);
+    font-size:.85rem; font-family:'DM Mono',monospace;
+  }
+  tr:hover td { background:var(--surface2); }
+  tr:last-child td { border-bottom:none; }
+  .turno-tag {
+    padding:2px 8px; border-radius:4px; font-size:.7rem;
+    font-weight:700; letter-spacing:.5px; text-transform:uppercase;
+  }
+  .turno-tag.m { background:var(--blue-dim); color:var(--blue); }
+  .turno-tag.t { background:var(--accent-dim); color:var(--accent); }
+  .val-pos { color:var(--green); }
+  .val-neg { color:var(--red); }
+
+  /* ADMIN TAB */
+  .admin-layout {
+    max-width:800px; margin:0 auto; padding:24px;
+  }
+  .names-grid {
+    display:grid; grid-template-columns:1fr 1fr; gap:24px;
+  }
+  .name-list {
+    list-style:none; margin-top:12px; display:flex; flex-direction:column; gap:6px;
+  }
+  .name-item {
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:8px; padding:8px 12px;
+    font-family:'DM Mono',monospace; font-size:.85rem;
+  }
+  .btn-remove {
+    background:none; border:none; color:var(--text3);
+    cursor:pointer; font-size:1rem; padding:2px 6px;
+    border-radius:4px; transition:all .2s;
+  }
+  .btn-remove:hover { color:var(--red); background:var(--red-dim); }
+  .add-name-row {
+    display:flex; gap:8px; margin-top:10px;
+  }
+  .btn-add {
+    padding:10px 16px; background:var(--accent);
+    border:none; border-radius:8px; color:white;
+    font-family:'Exo 2',sans-serif; font-weight:700;
+    font-size:.85rem; cursor:pointer; transition:all .2s;
+    white-space:nowrap;
+  }
+  .btn-add:hover { background:var(--accent2); }
+
+  .toast {
+    position:fixed; bottom:24px; right:24px;
+    background:var(--surface3); border:1px solid var(--green);
+    border-radius:10px; padding:14px 20px;
+    font-size:.9rem; color:var(--green);
+    transform:translateY(80px); opacity:0;
+    transition:all .3s; z-index:999;
+    font-family:'Exo 2',sans-serif; font-weight:600;
+  }
+  .toast.show { transform:translateY(0); opacity:1; }
+  .toast.error { border-color:var(--red); color:var(--red); }
+
+  /* Machines count control */
+  .num-control {
+    display:flex; align-items:center; gap:8px;
+  }
+  .num-btn {
+    width:32px; height:32px; border:1px solid var(--border);
+    background:var(--surface2); border-radius:6px;
+    color:var(--text); cursor:pointer; font-size:1.1rem;
+    display:flex; align-items:center; justify-content:center;
+    transition:all .2s;
+  }
+  .num-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .num-display {
+    font-family:'DM Mono',monospace; font-size:1rem;
+    color:var(--text); min-width:28px; text-align:center;
+  }
+
+  /* Separadores para máquinas */
+  .machines-separator {
+    grid-column:1/-1;
+    font-size:.7rem; text-transform:uppercase; letter-spacing:.8px;
+    color:var(--text3); padding:4px 0; border-top:1px dashed var(--border);
+    margin-top:4px;
+  }
+
+  /* Empty states */
+  .empty-state {
+    text-align:center; padding:48px 24px;
+    color:var(--text3);
+  }
+  .empty-state .icon { font-size:3rem; margin-bottom:12px; }
+  .empty-state p { font-size:.9rem; }
+
+  .no-machines { color:var(--text3); font-size:.85rem; text-align:center; padding:20px; }
+
+  @media(max-width:900px) {
+    .turno-layout { grid-template-columns:1fr; }
+    .totals-row { grid-template-columns:1fr 1fr; }
+    .enc-grid { grid-template-columns:1fr; }
+    .desc-row { grid-template-columns:1fr 1fr; }
+    .names-grid { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="app-logo">Grifo <span>Control</span></div>
+  <button class="tab-btn active" onclick="showTab('turno',this)">📋 Turno</button>
+  <button class="tab-btn" onclick="showTab('descuentos',this)">💰 Descuentos</button>
+  <button class="tab-btn" onclick="showTab('historial',this)">📊 Historial</button>
+  <button class="tab-btn" onclick="showTab('admin',this)">⚙️ Personal</button>
+</header>
+
+<!-- ========== TURNO TAB ========== -->
+<div id="tab-turno" class="tab-content active">
+<div class="turno-layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="card">
+      <div class="card-title">Configuración</div>
+
+      <div class="form-group">
+        <label class="form-label">Sede</label>
+        <select id="sede" onchange="updatePersonal()">
+          <option value="VERPASAR">VERPASAR</option>
+          <option value="HUARAL">HUARAL</option>
+          <option value="SERVICENTRO">SERVICENTRO</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Fecha</label>
+        <input type="date" id="fecha">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Turno</label>
+        <div class="turno-toggle">
+          <button class="turno-btn active" id="btn-mañana" onclick="setTurno('MAÑANA')">🌅 Mañana</button>
+          <button class="turno-btn" id="btn-tarde" onclick="setTurno('TARDE')">🌆 Tarde</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">N° Máquinas Líquido</label>
+        <div class="num-control">
+          <button class="num-btn" onclick="changeMachines('liq',-1)">−</button>
+          <span class="num-display" id="liq-count">3</span>
+          <button class="num-btn" onclick="changeMachines('liq',1)">+</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">N° Máquinas GLP</label>
+        <div class="num-control">
+          <button class="num-btn" onclick="changeMachines('glp',-1)">−</button>
+          <span class="num-display" id="glp-count">2</span>
+          <button class="num-btn" onclick="changeMachines('glp',1)">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Encargados</div>
+      <div class="form-group">
+        <label class="form-label">Encargado del Turno</label>
+        <select id="enc-turno">
+          <option value="">— Seleccionar —</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Encargado GLP</label>
+        <select id="enc-glp">
+          <option value="">— Seleccionar —</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Encargado Líquido</label>
+        <select id="enc-liq">
+          <option value="">— Seleccionar —</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn-save" onclick="guardarTurno()">💾 Guardar Turno</button>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main-area">
+
+    <!-- MAQUINAS LIQUIDO -->
+    <div class="card">
+      <div class="machines-header">
+        <div class="section-title">⛽ Máquinas Líquido</div>
+        <div id="total-liq-badge" class="badge">Total: 0.00</div>
+      </div>
+      <div class="machines-grid" id="liq-machines-grid">
+      </div>
+    </div>
+
+    <!-- MAQUINAS GLP -->
+    <div class="card">
+      <div class="machines-header">
+        <div class="section-title">🔵 Máquinas GLP</div>
+        <div id="total-glp-badge" class="badge">Total: 0.00</div>
+      </div>
+      <div class="machines-grid" id="glp-machines-grid">
+      </div>
+    </div>
+
+    <!-- TOTALES -->
+    <div class="card">
+      <div class="card-title">Resumen del Turno</div>
+      <div class="totals-row">
+        <div class="total-box">
+          <div class="total-label">Total Líquido</div>
+          <div class="total-value" id="sum-liq">S/ 0.00</div>
+        </div>
+        <div class="total-box">
+          <div class="total-label">Total GLP</div>
+          <div class="total-value" id="sum-glp">S/ 0.00</div>
+        </div>
+        <div class="total-box">
+          <div class="total-label">Total Turno</div>
+          <div class="total-value highlight" id="sum-total">S/ 0.00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DESCUENTOS -->
+    <div class="card">
+      <div class="card-title">Cuadre de Caja</div>
+      <div class="enc-grid">
+        <!-- LIQUIDO -->
+        <div class="enc-card">
+          <div class="enc-title">💧 Líquido — Encargado: <span id="lbl-enc-liq" style="color:var(--blue)">—</span></div>
+          <div class="desc-row">
+            <div>
+              <div class="mini-label">Total calculado</div>
+              <div class="desc-result" id="calc-liq-total" style="color:var(--text2)">S/ 0.00</div>
+            </div>
+            <div>
+              <div class="mini-label">Entregó</div>
+              <input type="number" id="entrego-liq" placeholder="0.00" oninput="calcDesc()" step="0.01">
+            </div>
+            <div>
+              <div class="mini-label">Diferencia</div>
+              <div class="desc-result" id="diff-liq">—</div>
+            </div>
+          </div>
+        </div>
+        <!-- GLP -->
+        <div class="enc-card">
+          <div class="enc-title">🔵 GLP — Encargado: <span id="lbl-enc-glp" style="color:var(--blue)">—</span></div>
+          <div class="desc-row">
+            <div>
+              <div class="mini-label">Total calculado</div>
+              <div class="desc-result" id="calc-glp-total" style="color:var(--text2)">S/ 0.00</div>
+            </div>
+            <div>
+              <div class="mini-label">Entregó</div>
+              <input type="number" id="entrego-glp" placeholder="0.00" oninput="calcDesc()" step="0.01">
+            </div>
+            <div>
+              <div class="mini-label">Diferencia</div>
+              <div class="desc-result" id="diff-glp">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- ========== DESCUENTOS TAB ========== -->
+<div id="tab-descuentos" class="tab-content">
+<div class="desc-tab-layout">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+    <h2 style="font-family:'Rajdhani',sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;">
+      Balance por Trabajador
+    </h2>
+    <div style="display:flex;gap:8px;">
+      <button class="btn-filter active" onclick="filterSede('TODAS',this)">Todas</button>
+      <button class="btn-filter" onclick="filterSede('VERPASAR',this)">Verpasar</button>
+      <button class="btn-filter" onclick="filterSede('HUARAL',this)">Huaral</button>
+      <button class="btn-filter" onclick="filterSede('SERVICENTRO',this)">Servicentro</button>
+    </div>
+  </div>
+  <div class="workers-grid" id="workers-grid">
+    <div class="empty-state"><div class="icon">💰</div><p>Aún no hay turnos guardados</p></div>
+  </div>
+</div>
+</div>
+
+<!-- ========== HISTORIAL TAB ========== -->
+<div id="tab-historial" class="tab-content">
+<div class="hist-layout">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+    <h2 style="font-family:'Rajdhani',sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;">
+      Historial de Turnos
+    </h2>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <select id="hist-sede-filter" onchange="renderHistorial()" style="width:auto;padding:8px 12px;">
+        <option value="TODAS">Todas las sedes</option>
+        <option value="VERPASAR">VERPASAR</option>
+        <option value="HUARAL">HUARAL</option>
+        <option value="SERVICENTRO">SERVICENTRO</option>
+      </select>
+      <button class="btn-filter" onclick="exportarCSV()" style="white-space:nowrap;">⬇️ Exportar CSV</button>
+    </div>
+  </div>
+  <div class="hist-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Sede</th>
+          <th>Turno</th>
+          <th>Enc. Turno</th>
+          <th>Enc. GLP</th>
+          <th>Enc. Líquido</th>
+          <th>Total Líquido</th>
+          <th>Total GLP</th>
+          <th>Total Turno</th>
+          <th>Diff. Líquido</th>
+          <th>Diff. GLP</th>
+        </tr>
+      </thead>
+      <tbody id="hist-tbody">
+        <tr><td colspan="11" style="text-align:center;color:var(--text3);padding:32px;">Sin registros</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>
+
+<!-- ========== ADMIN TAB ========== -->
+<div id="tab-admin" class="tab-content">
+<div class="admin-layout">
+  <h2 style="font-family:'Rajdhani',sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:24px;">
+    ⚙️ Gestión de Personal
+  </h2>
+  <div class="names-grid">
+    <!-- VERPASAR -->
+    <div class="card">
+      <div class="card-title">VERPASAR</div>
+      <ul class="name-list" id="list-VERPASAR"></ul>
+      <div class="add-name-row">
+        <input type="text" id="new-VERPASAR" placeholder="Nuevo nombre..." style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+        <button class="btn-add" onclick="addName('VERPASAR')">+ Agregar</button>
+      </div>
+    </div>
+    <!-- HUARAL -->
+    <div class="card">
+      <div class="card-title">HUARAL</div>
+      <ul class="name-list" id="list-HUARAL"></ul>
+      <div class="add-name-row">
+        <input type="text" id="new-HUARAL" placeholder="Nuevo nombre..." style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+        <button class="btn-add" onclick="addName('HUARAL')">+ Agregar</button>
+      </div>
+    </div>
+    <!-- SERVICENTRO -->
+    <div class="card" style="grid-column:1/-1;">
+      <div class="card-title">SERVICENTRO</div>
+      <ul class="name-list" id="list-SERVICENTRO" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;"></ul>
+      <div class="add-name-row">
+        <input type="text" id="new-SERVICENTRO" placeholder="Nuevo nombre..." style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+        <button class="btn-add" onclick="addName('SERVICENTRO')">+ Agregar</button>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:24px;" class="card">
+    <div class="card-title">Peligro</div>
+    <p style="color:var(--text2);font-size:.85rem;margin-bottom:12px;">Eliminar todos los turnos guardados. Esta acción no se puede deshacer.</p>
+    <button onclick="clearAllData()" style="padding:10px 20px;background:var(--red-dim);border:1px solid var(--red);border-radius:8px;color:var(--red);cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">
+      🗑️ Limpiar todos los datos
+    </button>
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===================== STATE =====================
+const DEFAULT_NAMES = {
+  VERPASAR: ['LUZMILA','SOCORRO','ROMARIO','GISELLA','ANGIE'],
+  HUARAL: ['FABRIZIO','PERCY','ISMAEL','DORA','CINTHIA','PABLO'],
+  SERVICENTRO: ['YADIRA','CARLOS','ELI','ANGELICA']
+};
+
+let state = {
+  names: JSON.parse(localStorage.getItem('gf_names') || 'null') || JSON.parse(JSON.stringify(DEFAULT_NAMES)),
+  turnos: JSON.parse(localStorage.getItem('gf_turnos') || '[]'),
+  liqCount: 3,
+  glpCount: 2,
+  turno: 'MAÑANA'
+};
+
+function save() {
+  localStorage.setItem('gf_names', JSON.stringify(state.names));
+  localStorage.setItem('gf_turnos', JSON.stringify(state.turnos));
+}
+
+// ===================== TABS =====================
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+  if(id === 'descuentos') renderDescuentos('TODAS');
+  if(id === 'historial') renderHistorial();
+  if(id === 'admin') renderAdminLists();
+}
+
+// ===================== INIT DATE =====================
+document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+
+// ===================== TURNO =====================
+function setTurno(t) {
+  state.turno = t;
+  document.getElementById('btn-mañana').classList.toggle('active', t === 'MAÑANA');
+  document.getElementById('btn-tarde').classList.toggle('active', t === 'TARDE');
+}
+
+function changeMachines(type, delta) {
+  if(type === 'liq') {
+    state.liqCount = Math.max(1, Math.min(15, state.liqCount + delta));
+    document.getElementById('liq-count').textContent = state.liqCount;
+  } else {
+    state.glpCount = Math.max(0, Math.min(10, state.glpCount + delta));
+    document.getElementById('glp-count').textContent = state.glpCount;
+  }
+  renderMachines();
+}
+
+function renderMachines() {
+  renderMachineGrid('liq', state.liqCount);
+  renderMachineGrid('glp', state.glpCount);
+}
+
+function renderMachineGrid(type, count) {
+  const grid = document.getElementById(type+'-machines-grid');
+  grid.innerHTML = '';
+  if(count === 0) {
+    grid.innerHTML = '<div class="no-machines">Sin máquinas configuradas</div>';
+    return;
+  }
+  for(let i=1; i<=count; i++) {
+    const card = document.createElement('div');
+    card.className = 'machine-card';
+    card.innerHTML = `
+      <div class="machine-label">
+        <span class="machine-num">#${i}</span>
+        Máquina ${type.toUpperCase()} ${i}
+      </div>
+      <div class="machine-inputs">
+        <div>
+          <div class="mini-label">Lectura Anterior</div>
+          <input type="number" id="${type}-prev-${i}" placeholder="0.00" step="0.01"
+            oninput="calcMachine('${type}',${i})" style="font-size:.85rem;">
+        </div>
+        <div>
+          <div class="mini-label">Lectura Actual</div>
+          <input type="number" id="${type}-curr-${i}" placeholder="0.00" step="0.01"
+            oninput="calcMachine('${type}',${i})" style="font-size:.85rem;">
+        </div>
+        <div style="grid-column:1/-1;">
+          <div class="mini-label">Venta</div>
+          <div class="diff-display" id="${type}-diff-${i}">—</div>
+        </div>
+      </div>`;
+    grid.appendChild(card);
+  }
+}
+
+function calcMachine(type, i) {
+  const prev = parseFloat(document.getElementById(`${type}-prev-${i}`)?.value) || 0;
+  const curr = parseFloat(document.getElementById(`${type}-curr-${i}`)?.value) || 0;
+  const diff = curr - prev;
+  const el = document.getElementById(`${type}-diff-${i}`);
+  if(el) {
+    el.textContent = diff !== 0 ? fmt(diff) : '—';
+    el.className = 'diff-display' + (diff < 0 ? ' negative' : '');
+  }
+  updateTotals();
+}
+
+function getMachineTotal(type, count) {
+  let total = 0;
+  for(let i=1; i<=count; i++) {
+    const prev = parseFloat(document.getElementById(`${type}-prev-${i}`)?.value) || 0;
+    const curr = parseFloat(document.getElementById(`${type}-curr-${i}`)?.value) || 0;
+    total += (curr - prev);
+  }
+  return total;
+}
+
+function updateTotals() {
+  const liqTotal = getMachineTotal('liq', state.liqCount);
+  const glpTotal = getMachineTotal('glp', state.glpCount);
+  const total = liqTotal + glpTotal;
+
+  document.getElementById('sum-liq').textContent = 'S/ ' + fmt(liqTotal);
+  document.getElementById('sum-glp').textContent = 'S/ ' + fmt(glpTotal);
+  document.getElementById('sum-total').textContent = 'S/ ' + fmt(total);
+  document.getElementById('total-liq-badge').textContent = 'Total: ' + fmt(liqTotal);
+  document.getElementById('total-glp-badge').textContent = 'Total: ' + fmt(glpTotal);
+  document.getElementById('calc-liq-total').textContent = 'S/ ' + fmt(liqTotal);
+  document.getElementById('calc-glp-total').textContent = 'S/ ' + fmt(glpTotal);
+
+  // update labels
+  document.getElementById('lbl-enc-liq').textContent = document.getElementById('enc-liq').value || '—';
+  document.getElementById('lbl-enc-glp').textContent = document.getElementById('enc-glp').value || '—';
+
+  calcDesc();
+}
+
+function calcDesc() {
+  const liqCalc = getMachineTotal('liq', state.liqCount);
+  const glpCalc = getMachineTotal('glp', state.glpCount);
+  const entLiq = parseFloat(document.getElementById('entrego-liq').value) || 0;
+  const entGlp = parseFloat(document.getElementById('entrego-glp').value) || 0;
+
+  setDiffEl('diff-liq', entLiq - liqCalc);
+  setDiffEl('diff-glp', entGlp - glpCalc);
+}
+
+function setDiffEl(id, val) {
+  const el = document.getElementById(id);
+  if(!el) return;
+  if(val === 0) { el.textContent = '—'; el.className = 'desc-result'; return; }
+  el.textContent = (val > 0 ? '+' : '') + fmt(val);
+  el.className = 'desc-result ' + (val > 0 ? 'positive' : 'negative');
+}
+
+function updatePersonal() {
+  const sede = document.getElementById('sede').value;
+  const names = state.names[sede] || [];
+  ['enc-turno','enc-glp','enc-liq'].forEach(id => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '<option value="">— Seleccionar —</option>';
+    names.forEach(n => {
+      const opt = document.createElement('option');
+      opt.value = n; opt.textContent = n;
+      sel.appendChild(opt);
+    });
+  });
+}
+
+function guardarTurno() {
+  const sede = document.getElementById('sede').value;
+  const fecha = document.getElementById('fecha').value;
+  const turno = state.turno;
+
+  if(!fecha) { toast('⚠️ Selecciona una fecha', true); return; }
+
+  const liqTotal = getMachineTotal('liq', state.liqCount);
+  const glpTotal = getMachineTotal('glp', state.glpCount);
+  const total = liqTotal + glpTotal;
+  const encTurno = document.getElementById('enc-turno').value;
+  const encGlp = document.getElementById('enc-glp').value;
+  const encLiq = document.getElementById('enc-liq').value;
+  const entLiq = parseFloat(document.getElementById('entrego-liq').value) || 0;
+  const entGlp = parseFloat(document.getElementById('entrego-glp').value) || 0;
+  const diffLiq = entLiq > 0 ? entLiq - liqTotal : null;
+  const diffGlp = entGlp > 0 ? entGlp - glpTotal : null;
+
+  // Collect machines
+  const machines = { liq:[], glp:[] };
+  for(let i=1; i<=state.liqCount; i++) {
+    machines.liq.push({
+      prev: parseFloat(document.getElementById(`liq-prev-${i}`)?.value)||0,
+      curr: parseFloat(document.getElementById(`liq-curr-${i}`)?.value)||0
+    });
+  }
+  for(let i=1; i<=state.glpCount; i++) {
+    machines.glp.push({
+      prev: parseFloat(document.getElementById(`glp-prev-${i}`)?.value)||0,
+      curr: parseFloat(document.getElementById(`glp-curr-${i}`)?.value)||0
+    });
+  }
+
+  const record = {
+    id: Date.now(),
+    sede, fecha, turno,
+    encTurno, encGlp, encLiq,
+    liqTotal, glpTotal, total,
+    entLiq, entGlp,
+    diffLiq, diffGlp,
+    machines
+  };
+
+  state.turnos.push(record);
+  save();
+  toast('✅ Turno guardado correctamente');
+
+  // Reset entrego fields
+  document.getElementById('entrego-liq').value = '';
+  document.getElementById('entrego-glp').value = '';
+  document.getElementById('diff-liq').textContent = '—';
+  document.getElementById('diff-glp').textContent = '—';
+  document.getElementById('diff-liq').className = 'desc-result';
+  document.getElementById('diff-glp').className = 'desc-result';
+}
+
+// ===================== DESCUENTOS =====================
+function filterSede(sede, btn) {
+  document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderDescuentos(sede);
+}
+
+function renderDescuentos(sedeFilter) {
+  const grid = document.getElementById('workers-grid');
+  if(!state.turnos.length) {
+    grid.innerHTML = '<div class="empty-state"><div class="icon">💰</div><p>Aún no hay turnos guardados</p></div>';
+    return;
+  }
+
+  // Build worker balance map
+  const workers = {}; // name -> {sede, faltante, sobrante, turnos}
+  state.turnos.forEach(t => {
+    if(sedeFilter !== 'TODAS' && t.sede !== sedeFilter) return;
+    // Encargado Liquido
+    [
+      {name: t.encLiq, diff: t.diffLiq},
+      {name: t.encGlp, diff: t.diffGlp}
+    ].forEach(({name, diff}) => {
+      if(!name || diff === null || diff === undefined) return;
+      if(!workers[name]) workers[name] = {sede: t.sede, faltante:0, sobrante:0, turnos:0};
+      workers[name].turnos++;
+      if(diff < 0) workers[name].faltante += diff;
+      else if(diff > 0) workers[name].sobrante += diff;
+    });
+  });
+
+  if(!Object.keys(workers).length) {
+    grid.innerHTML = '<div class="empty-state"><div class="icon">💰</div><p>No hay datos para esta sede</p></div>';
+    return;
+  }
+
+  grid.innerHTML = '';
+  Object.entries(workers).sort(([a],[b]) => a.localeCompare(b)).forEach(([name, data]) => {
+    const balance = data.faltante + data.sobrante;
+    const cls = balance > 0 ? 'pos' : balance < 0 ? 'neg' : 'zero';
+    const balanceCls = balance > 0 ? 'pos' : balance < 0 ? 'neg' : 'zero';
+    const card = document.createElement('div');
+    card.className = 'worker-card';
+    card.innerHTML = `
+      <div class="worker-sede">${data.sede}</div>
+      <div class="worker-name">${name}</div>
+      <div class="stat-row">
+        <span class="stat-key">Turnos registrados</span>
+        <span class="stat-val neu">${data.turnos}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-key">Total faltante</span>
+        <span class="stat-val neg">${fmt(data.faltante)}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-key">Total sobrante</span>
+        <span class="stat-val pos">+${fmt(data.sobrante)}</span>
+      </div>
+      <div class="balance-total ${balanceCls}">
+        Balance: ${balance >= 0 ? '+' : ''}${fmt(balance)}
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+// ===================== HISTORIAL =====================
+function renderHistorial() {
+  const tbody = document.getElementById('hist-tbody');
+  const sedeFilter = document.getElementById('hist-sede-filter').value;
+  const filtered = state.turnos.filter(t => sedeFilter === 'TODAS' || t.sede === sedeFilter);
+
+  if(!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--text3);padding:32px;">Sin registros</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = '';
+  [...filtered].reverse().forEach(t => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${t.fecha}</td>
+      <td>${t.sede}</td>
+      <td><span class="turno-tag ${t.turno === 'MAÑANA' ? 'm' : 't'}">${t.turno}</span></td>
+      <td style="color:var(--text)">${t.encTurno||'—'}</td>
+      <td style="color:var(--text)">${t.encGlp||'—'}</td>
+      <td style="color:var(--text)">${t.encLiq||'—'}</td>
+      <td>${fmt(t.liqTotal)}</td>
+      <td>${fmt(t.glpTotal)}</td>
+      <td style="color:var(--accent);font-weight:600">${fmt(t.total)}</td>
+      <td class="${t.diffLiq === null ? '' : t.diffLiq >= 0 ? 'val-pos' : 'val-neg'}">${t.diffLiq !== null ? (t.diffLiq >= 0 ? '+' : '') + fmt(t.diffLiq) : '—'}</td>
+      <td class="${t.diffGlp === null ? '' : t.diffGlp >= 0 ? 'val-pos' : 'val-neg'}">${t.diffGlp !== null ? (t.diffGlp >= 0 ? '+' : '') + fmt(t.diffGlp) : '—'}</td>`;
+    tbody.appendChild(row);
+  });
+}
+
+function exportarCSV() {
+  if(!state.turnos.length) { toast('No hay datos para exportar', true); return; }
+  const headers = ['Fecha','Sede','Turno','Enc.Turno','Enc.GLP','Enc.Liquido','Total Liq','Total GLP','Total','Diff Liq','Diff GLP'];
+  const rows = state.turnos.map(t => [
+    t.fecha, t.sede, t.turno, t.encTurno||'', t.encGlp||'', t.encLiq||'',
+    t.liqTotal.toFixed(2), t.glpTotal.toFixed(2), t.total.toFixed(2),
+    t.diffLiq !== null ? t.diffLiq.toFixed(2) : '', t.diffGlp !== null ? t.diffGlp.toFixed(2) : ''
+  ]);
+  const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csv);
+  a.download = `grifo_turnos_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+  toast('✅ CSV exportado');
+}
+
+// ===================== ADMIN =====================
+function renderAdminLists() {
+  ['VERPASAR','HUARAL','SERVICENTRO'].forEach(sede => {
+    const ul = document.getElementById('list-'+sede);
+    ul.innerHTML = '';
+    (state.names[sede]||[]).forEach(name => {
+      const li = document.createElement('li');
+      li.className = 'name-item';
+      li.innerHTML = `<span>${name}</span><button class="btn-remove" onclick="removeName('${sede}','${name}')">✕</button>`;
+      ul.appendChild(li);
+    });
+  });
+}
+
+function addName(sede) {
+  const input = document.getElementById('new-'+sede);
+  const name = input.value.trim().toUpperCase();
+  if(!name) return;
+  if(state.names[sede].includes(name)) { toast('Ese nombre ya existe', true); return; }
+  state.names[sede].push(name);
+  save();
+  input.value = '';
+  renderAdminLists();
+  updatePersonal();
+  toast('✅ '+name+' agregado');
+}
+
+function removeName(sede, name) {
+  state.names[sede] = state.names[sede].filter(n => n !== name);
+  save();
+  renderAdminLists();
+  updatePersonal();
+}
+
+function clearAllData() {
+  if(!confirm('¿Eliminar TODOS los turnos guardados? Esta acción no se puede deshacer.')) return;
+  state.turnos = [];
+  save();
+  toast('🗑️ Datos eliminados');
+}
+
+// ===================== UTILS =====================
+function fmt(n) {
+  return (Math.abs(n) < 0.001 ? 0 : n).toLocaleString('es-PE', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function toast(msg, err) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (err ? ' error' : '');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ===================== INIT =====================
+updatePersonal();
+renderMachines();
+renderAdminLists();
+
+// Update labels when enc select changes
+['enc-liq','enc-glp'].forEach(id => {
+  document.getElementById(id).addEventListener('change', () => {
+    document.getElementById('lbl-enc-liq').textContent = document.getElementById('enc-liq').value || '—';
+    document.getElementById('lbl-enc-glp').textContent = document.getElementById('enc-glp').value || '—';
+  });
+});
+</script>
+</body>
+</html>
