@@ -3,146 +3,212 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema de Cuentas - Grifo</title>
+<title>Sistema de Cuentas — Grifo Control</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Exo+2:wght@300;400;600;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg:#0d1117;--surface:#161b22;--surface2:#1c2230;--surface3:#21293a;
-    --border:#30363d;--accent:#f97316;--accent2:#fb923c;--accent-dim:rgba(249,115,22,0.15);
-    --blue:#38bdf8;--blue-dim:rgba(56,189,248,0.12);
-    --green:#4ade80;--green-dim:rgba(74,222,128,0.12);
-    --red:#f87171;--red-dim:rgba(248,113,113,0.12);
-    --purple:#a78bfa;--purple-dim:rgba(167,139,250,0.13);
-    --text:#e6edf3;--text2:#8b949e;--text3:#6e7681;
-  }
-  *{margin:0;padding:0;box-sizing:border-box;}
-  body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-height:100vh;}
-  .app-header{background:linear-gradient(135deg,#0d1117,#1a1f2e);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;position:sticky;top:0;z-index:100;flex-wrap:wrap;}
-  .app-logo{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.4rem;color:var(--accent);letter-spacing:2px;padding:16px 24px 16px 0;border-right:1px solid var(--border);margin-right:8px;text-transform:uppercase;}
-  .app-logo span{color:var(--text2);font-weight:400;}
-  .tab-btn{padding:18px 20px;background:none;border:none;color:var(--text2);cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.9rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase;border-bottom:3px solid transparent;transition:all .2s;}
-  .tab-btn:hover{color:var(--text);}
-  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
-  .tab-content{display:none;}
-  .tab-content.active{display:block;}
-  .turno-layout{max-width:1500px;margin:0 auto;padding:24px;display:grid;grid-template-columns:300px 1fr;gap:24px;}
-  .sidebar{display:flex;flex-direction:column;gap:16px;}
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;}
-  .card-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
-  .card-title::before{content:'';display:inline-block;width:3px;height:14px;background:var(--accent);border-radius:2px;}
-  .form-group{margin-bottom:14px;}
-  .form-label{display:block;font-size:.75rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text2);margin-bottom:6px;}
-  select,input[type="date"],input[type="number"],input[type="text"]{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 12px;font-family:'DM Mono',monospace;font-size:.9rem;transition:border-color .2s,box-shadow .2s;outline:none;}
-  select:focus,input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim);}
-  select option{background:var(--surface2);}
-  .turno-toggle{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-  .turno-btn{padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text2);cursor:pointer;text-align:center;font-family:'Exo 2',sans-serif;font-weight:600;font-size:.85rem;letter-spacing:.5px;text-transform:uppercase;transition:all .2s;}
-  .turno-btn:hover{border-color:var(--accent);color:var(--accent);}
-  .turno-btn.active{background:var(--accent);border-color:var(--accent);color:white;}
-  /* SOLO TOGGLE */
-  .solo-toggle{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 14px;cursor:pointer;transition:all .2s;margin-bottom:14px;user-select:none;}
-  .solo-toggle:hover{border-color:var(--purple);}
-  .solo-toggle.active{border-color:var(--purple);background:var(--purple-dim);}
-  .solo-chk{width:17px!important;height:17px!important;cursor:pointer;accent-color:var(--purple);flex-shrink:0;padding:0!important;}
-  .solo-lbl{font-size:.78rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text2);line-height:1.4;}
-  .solo-toggle.active .solo-lbl{color:var(--purple);}
-  .solo-section{background:var(--purple-dim);border:1px solid rgba(167,139,250,.3);border-radius:10px;padding:14px;margin-bottom:14px;display:none;}
-  .solo-section.visible{display:block;}
-  .solo-section .form-label{color:var(--purple);}
-  /* MAIN */
-  .main-area{display:flex;flex-direction:column;gap:20px;}
-  .machines-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
-  .section-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.1rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--text);}
-  .badge{background:var(--accent-dim);color:var(--accent);padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700;letter-spacing:.5px;}
-  .machines-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;}
-  .machine-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;transition:border-color .2s;}
-  .machine-card:hover{border-color:var(--accent);}
-  .machine-label{font-family:'DM Mono',monospace;font-size:.78rem;color:var(--text2);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
-  .machine-num{background:var(--surface3);color:var(--accent);padding:2px 8px;border-radius:4px;font-weight:700;font-size:.82rem;}
-  .machine-inputs{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-  .mini-label{font-size:.68rem;color:var(--text3);margin-bottom:4px;letter-spacing:.5px;text-transform:uppercase;}
-  .diff-display{background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:'DM Mono',monospace;font-size:.92rem;color:var(--green);text-align:right;min-height:37px;display:flex;align-items:center;justify-content:flex-end;}
-  .diff-display.negative{color:var(--red);}
-  .totals-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
-  .total-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;}
-  .total-label{font-size:.75rem;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;}
-  .total-value{font-family:'DM Mono',monospace;font-size:1.4rem;font-weight:500;color:var(--blue);}
-  .total-value.highlight{color:var(--accent);font-size:1.6rem;}
-  .enc-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-  .enc-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;}
-  .enc-title{font-size:.74rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:12px;font-weight:600;}
-  .desc-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;align-items:end;}
-  .desc-result{background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'DM Mono',monospace;font-size:.95rem;text-align:right;min-height:40px;display:flex;align-items:center;justify-content:flex-end;color:var(--text2);}
-  .desc-result.positive{color:var(--green);border-color:rgba(74,222,128,.3);}
-  .desc-result.negative{color:var(--red);border-color:rgba(248,113,113,.3);}
-  /* Solo cuadre */
-  .solo-cuadre{background:var(--purple-dim);border:1px solid rgba(167,139,250,.3);border-radius:10px;padding:16px;}
-  .solo-cuadre-title{font-size:.74rem;text-transform:uppercase;letter-spacing:.8px;color:var(--purple);margin-bottom:14px;font-weight:600;}
-  .solo-desc-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:10px;align-items:end;}
-  .solo-diffs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
-  .btn-save{width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),#ea580c);border:none;border-radius:10px;color:white;font-family:'Exo 2',sans-serif;font-size:1rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;box-shadow:0 4px 20px rgba(249,115,22,.3);}
-  .btn-save:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(249,115,22,.4);}
-  /* DESCUENTOS */
-  .desc-tab-layout{max-width:1400px;margin:0 auto;padding:24px;}
-  .btn-filter{padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text2);cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.85rem;font-weight:600;transition:all .2s;}
-  .btn-filter:hover{border-color:var(--accent);color:var(--accent);}
-  .btn-filter.active{background:var(--accent);border-color:var(--accent);color:white;}
-  .workers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
-  .worker-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden;}
-  .worker-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,var(--accent),var(--accent2));}
-  .worker-name{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.2rem;letter-spacing:1px;text-transform:uppercase;color:var(--text);margin-bottom:12px;padding-left:4px;}
-  .worker-sede{font-size:.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;}
-  .stat-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);}
-  .stat-row:last-child{border-bottom:none;}
-  .stat-key{font-size:.8rem;color:var(--text2);}
-  .stat-val{font-family:'DM Mono',monospace;font-size:.85rem;font-weight:500;}
-  .stat-val.pos{color:var(--green);}.stat-val.neg{color:var(--red);}.stat-val.neu{color:var(--text2);}
-  .balance-total{margin-top:12px;padding:10px 12px;border-radius:8px;text-align:right;font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:500;}
-  .balance-total.pos{background:var(--green-dim);color:var(--green);}
-  .balance-total.neg{background:var(--red-dim);color:var(--red);}
-  .balance-total.zero{background:var(--surface2);color:var(--text2);}
-  /* HISTORIAL */
-  .hist-layout{max-width:1500px;margin:0 auto;padding:24px;}
-  .hist-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:auto;}
-  table{width:100%;border-collapse:collapse;}
-  thead{background:var(--surface2);}
-  th{padding:12px 14px;text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap;}
-  td{padding:10px 14px;border-bottom:1px solid rgba(48,54,61,.5);font-size:.82rem;font-family:'DM Mono',monospace;}
-  tr:hover td{background:var(--surface2);}
-  tr:last-child td{border-bottom:none;}
-  .turno-tag{padding:2px 8px;border-radius:4px;font-size:.7rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
-  .turno-tag.m{background:var(--blue-dim);color:var(--blue);}
-  .turno-tag.t{background:var(--accent-dim);color:var(--accent);}
-  .val-pos{color:var(--green);}.val-neg{color:var(--red);}
-  /* ADMIN */
-  .admin-layout{max-width:960px;margin:0 auto;padding:24px;}
-  .sedes-list{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
-  .sede-chip{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.9rem;letter-spacing:1px;text-transform:uppercase;}
-  .sede-chip.active{border-color:var(--accent);background:var(--accent-dim);color:var(--accent);}
-  .sede-chip-toggle{background:none;border:none;cursor:pointer;font-size:.85rem;padding:2px 7px;border-radius:4px;transition:all .2s;line-height:1;}
-  .sede-chip.active .sede-chip-toggle{color:var(--red);}
-  .sede-chip.active .sede-chip-toggle:hover{background:var(--red-dim);}
-  .sede-chip:not(.active) .sede-chip-toggle{color:var(--green);}
-  .sede-chip:not(.active) .sede-chip-toggle:hover{background:var(--green-dim);}
-  .names-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;}
-  .name-list{list-style:none;margin-top:12px;display:flex;flex-direction:column;gap:6px;}
-  .name-item{display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:.85rem;}
-  .btn-remove{background:none;border:none;color:var(--text3);cursor:pointer;font-size:1rem;padding:2px 6px;border-radius:4px;transition:all .2s;}
-  .btn-remove:hover{color:var(--red);background:var(--red-dim);}
-  .add-name-row{display:flex;gap:8px;margin-top:10px;}
-  .btn-add{padding:10px 14px;background:var(--accent);border:none;border-radius:8px;color:white;font-family:'Exo 2',sans-serif;font-weight:700;font-size:.85rem;cursor:pointer;transition:all .2s;white-space:nowrap;}
-  .btn-add:hover{background:var(--accent2);}
-  .toast{position:fixed;bottom:24px;right:24px;background:var(--surface3);border:1px solid var(--green);border-radius:10px;padding:14px 20px;font-size:.9rem;color:var(--green);transform:translateY(80px);opacity:0;transition:all .3s;z-index:999;font-family:'Exo 2',sans-serif;font-weight:600;}
-  .toast.show{transform:translateY(0);opacity:1;}
-  .toast.error{border-color:var(--red);color:var(--red);}
-  .empty-state{text-align:center;padding:48px 24px;color:var(--text3);}
-  .empty-state .icon{font-size:3rem;margin-bottom:12px;}
-  @media(max-width:1000px){
-    .turno-layout{grid-template-columns:1fr;}
-    .totals-row{grid-template-columns:1fr 1fr;}
-    .enc-grid{grid-template-columns:1fr;}
-    .solo-desc-grid{grid-template-columns:1fr 1fr;}
-  }
+:root{
+  --bg:#0d1117;--surface:#161b22;--surface2:#1c2230;--surface3:#21293a;
+  --border:#30363d;--accent:#f97316;--accent2:#fb923c;--accent-dim:rgba(249,115,22,.15);
+  --blue:#38bdf8;--blue-dim:rgba(56,189,248,.12);
+  --green:#4ade80;--green-dim:rgba(74,222,128,.12);
+  --red:#f87171;--red-dim:rgba(248,113,113,.12);
+  --purple:#a78bfa;--purple-dim:rgba(167,139,250,.13);
+  --yellow:#facc15;--yellow-dim:rgba(250,204,21,.12);
+  --text:#e6edf3;--text2:#8b949e;--text3:#6e7681;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-height:100vh;}
+
+/* ── HEADER ── */
+.app-header{background:linear-gradient(135deg,#0d1117,#1a1f2e);border-bottom:1px solid var(--border);
+  padding:0 24px;display:flex;align-items:center;position:sticky;top:0;z-index:200;flex-wrap:wrap;}
+.app-logo{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.4rem;color:var(--accent);
+  letter-spacing:2px;padding:16px 24px 16px 0;border-right:1px solid var(--border);margin-right:8px;text-transform:uppercase;}
+.app-logo span{color:var(--text2);font-weight:400;}
+.tab-btn{padding:18px 20px;background:none;border:none;color:var(--text2);cursor:pointer;
+  font-family:'Exo 2',sans-serif;font-size:.9rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase;
+  border-bottom:3px solid transparent;transition:all .2s;}
+.tab-btn:hover{color:var(--text);}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* ── SHARED COMPONENTS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;}
+.card-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1rem;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--accent);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.card-title::before{content:'';display:inline-block;width:3px;height:14px;background:var(--accent);border-radius:2px;}
+.form-group{margin-bottom:14px;}
+.form-label{display:block;font-size:.75rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text2);margin-bottom:6px;}
+select,input[type="date"],input[type="number"],input[type="text"]{
+  width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  color:var(--text);padding:10px 12px;font-family:'DM Mono',monospace;font-size:.9rem;
+  transition:border-color .2s,box-shadow .2s;outline:none;}
+select:focus,input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim);}
+select option{background:var(--surface2);}
+.mini-label{font-size:.68rem;color:var(--text3);margin-bottom:4px;letter-spacing:.5px;text-transform:uppercase;}
+.badge{background:var(--accent-dim);color:var(--accent);padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700;letter-spacing:.5px;}
+.desc-result{background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;
+  font-family:'DM Mono',monospace;font-size:.95rem;text-align:right;min-height:40px;
+  display:flex;align-items:center;justify-content:flex-end;color:var(--text2);}
+.desc-result.positive{color:var(--green);border-color:rgba(74,222,128,.3);}
+.desc-result.negative{color:var(--red);border-color:rgba(248,113,113,.3);}
+.btn-save{width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),#ea580c);
+  border:none;border-radius:10px;color:white;font-family:'Exo 2',sans-serif;font-size:1rem;
+  font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;
+  transition:all .2s;box-shadow:0 4px 20px rgba(249,115,22,.3);}
+.btn-save:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(249,115,22,.4);}
+.btn-filter{padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:var(--surface);
+  color:var(--text2);cursor:pointer;font-family:'Exo 2',sans-serif;font-size:.85rem;font-weight:600;transition:all .2s;}
+.btn-filter:hover{border-color:var(--accent);color:var(--accent);}
+.btn-filter.active{background:var(--accent);border-color:var(--accent);color:white;}
+.empty-state{text-align:center;padding:48px 24px;color:var(--text3);}
+.empty-state .icon{font-size:3rem;margin-bottom:12px;}
+
+/* ── TURNO TAB ── */
+.turno-layout{max-width:1500px;margin:0 auto;padding:24px;display:grid;grid-template-columns:300px 1fr;gap:24px;}
+.sidebar{display:flex;flex-direction:column;gap:16px;}
+.turno-toggle{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.turno-btn{padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);
+  color:var(--text2);cursor:pointer;text-align:center;font-family:'Exo 2',sans-serif;font-weight:600;
+  font-size:.85rem;letter-spacing:.5px;text-transform:uppercase;transition:all .2s;}
+.turno-btn:hover{border-color:var(--accent);color:var(--accent);}
+.turno-btn.active{background:var(--accent);border-color:var(--accent);color:white;}
+/* solo toggle */
+.solo-toggle{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;padding:11px 14px;cursor:pointer;transition:all .2s;margin-bottom:14px;user-select:none;}
+.solo-toggle:hover{border-color:var(--purple);}
+.solo-toggle.active{border-color:var(--purple);background:var(--purple-dim);}
+.solo-chk{width:17px!important;height:17px!important;cursor:pointer;accent-color:var(--purple);flex-shrink:0;padding:0!important;}
+.solo-lbl{font-size:.78rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text2);line-height:1.4;}
+.solo-toggle.active .solo-lbl{color:var(--purple);}
+.solo-section{background:var(--purple-dim);border:1px solid rgba(167,139,250,.3);border-radius:10px;padding:14px;margin-bottom:14px;display:none;}
+.solo-section.visible{display:block;}
+.solo-section .form-label{color:var(--purple);}
+/* machines */
+.main-area{display:flex;flex-direction:column;gap:20px;}
+.machines-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.section-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.1rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--text);}
+.machines-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
+.machine-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;transition:border-color .2s;}
+.machine-card:hover{border-color:var(--accent);}
+.machine-label{font-family:'DM Mono',monospace;font-size:.78rem;color:var(--text2);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.machine-num{background:var(--surface3);color:var(--accent);padding:2px 8px;border-radius:4px;font-weight:700;font-size:.82rem;}
+.machine-inputs{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.diff-display{background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;
+  font-family:'DM Mono',monospace;font-size:.92rem;color:var(--green);text-align:right;min-height:37px;
+  display:flex;align-items:center;justify-content:flex-end;}
+.diff-display.negative{color:var(--red);}
+/* totals */
+.totals-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.total-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;}
+.total-label{font-size:.75rem;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;}
+.total-value{font-family:'DM Mono',monospace;font-size:1.4rem;font-weight:500;color:var(--blue);}
+.total-value.highlight{color:var(--accent);font-size:1.6rem;}
+/* cuadre */
+.enc-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.enc-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.enc-title{font-size:.74rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:12px;font-weight:600;}
+.desc-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;align-items:end;}
+.solo-cuadre{background:var(--purple-dim);border:1px solid rgba(167,139,250,.3);border-radius:10px;padding:16px;}
+.solo-cuadre-title{font-size:.74rem;text-transform:uppercase;letter-spacing:.8px;color:var(--purple);margin-bottom:14px;font-weight:600;}
+.solo-desc-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:10px;align-items:end;}
+.solo-diffs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+
+/* edit mode banner */
+.edit-banner{background:var(--yellow-dim);border:1px solid rgba(250,204,21,.4);border-radius:10px;
+  padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:0;}
+.edit-banner-text{font-size:.82rem;color:var(--yellow);font-weight:600;flex:1;}
+
+/* ── DESCUENTOS TAB ── */
+.desc-tab-layout{max-width:1400px;margin:0 auto;padding:24px;}
+.workers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+.worker-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden;}
+.worker-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,var(--accent),var(--accent2));}
+.worker-name{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.2rem;letter-spacing:1px;text-transform:uppercase;color:var(--text);margin-bottom:12px;padding-left:4px;}
+.worker-sede{font-size:.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);}
+.stat-row:last-child{border-bottom:none;}
+.stat-key{font-size:.8rem;color:var(--text2);}
+.stat-val{font-family:'DM Mono',monospace;font-size:.85rem;font-weight:500;}
+.stat-val.pos{color:var(--green);}.stat-val.neg{color:var(--red);}.stat-val.neu{color:var(--text2);}
+.balance-total{margin-top:12px;padding:10px 12px;border-radius:8px;text-align:right;font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:500;}
+.balance-total.pos{background:var(--green-dim);color:var(--green);}
+.balance-total.neg{background:var(--red-dim);color:var(--red);}
+.balance-total.zero{background:var(--surface2);color:var(--text2);}
+
+/* ── HISTORIAL TAB ── */
+.hist-layout{max-width:1600px;margin:0 auto;padding:24px;}
+.hist-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:auto;}
+table{width:100%;border-collapse:collapse;}
+thead{background:var(--surface2);}
+th{padding:11px 12px;text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap;}
+td{padding:9px 12px;border-bottom:1px solid rgba(48,54,61,.5);font-size:.8rem;font-family:'DM Mono',monospace;white-space:nowrap;}
+tbody tr{cursor:pointer;transition:background .15s;}
+tbody tr:hover td{background:rgba(249,115,22,.07);}
+tbody tr.editing td{background:rgba(250,204,21,.06);border-left:3px solid var(--yellow);}
+tr:last-child td{border-bottom:none;}
+.turno-tag{padding:2px 8px;border-radius:4px;font-size:.7rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+.turno-tag.m{background:var(--blue-dim);color:var(--blue);}
+.turno-tag.t{background:var(--accent-dim);color:var(--accent);}
+.val-pos{color:var(--green);}.val-neg{color:var(--red);}
+/* expandable machine detail in history */
+.hist-detail-row td{background:var(--surface2)!important;cursor:default;padding:16px 20px;}
+.hist-detail-row:hover td{background:var(--surface2)!important;}
+.machines-detail-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:8px;}
+.mdet-card{background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:10px;}
+.mdet-title{font-size:.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.mdet-row{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:.78rem;margin-bottom:3px;}
+.mdet-row .k{color:var(--text3);}
+.mdet-row .v{color:var(--text);}
+.mdet-row .diff{color:var(--green);}
+.mdet-row .diff.neg{color:var(--red);}
+.expand-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--text2);
+  cursor:pointer;font-size:.72rem;padding:3px 9px;transition:all .2s;font-family:'Exo 2',sans-serif;font-weight:600;}
+.expand-btn:hover{border-color:var(--accent);color:var(--accent);}
+.edit-row-btn{background:none;border:1px solid rgba(250,204,21,.4);border-radius:6px;color:var(--yellow);
+  cursor:pointer;font-size:.72rem;padding:3px 9px;transition:all .2s;font-family:'Exo 2',sans-serif;font-weight:600;margin-left:6px;}
+.edit-row-btn:hover{background:var(--yellow-dim);}
+.del-row-btn{background:none;border:1px solid rgba(248,113,113,.3);border-radius:6px;color:var(--red);
+  cursor:pointer;font-size:.72rem;padding:3px 9px;transition:all .2s;font-family:'Exo 2',sans-serif;font-weight:600;margin-left:4px;}
+.del-row-btn:hover{background:var(--red-dim);}
+
+/* ── ADMIN TAB ── */
+.admin-layout{max-width:960px;margin:0 auto;padding:24px;}
+.sedes-list{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
+.sede-chip{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;padding:8px 14px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.9rem;letter-spacing:1px;text-transform:uppercase;}
+.sede-chip.active{border-color:var(--accent);background:var(--accent-dim);color:var(--accent);}
+.sede-chip-toggle{background:none;border:none;cursor:pointer;font-size:.85rem;padding:2px 7px;border-radius:4px;transition:all .2s;line-height:1;}
+.sede-chip.active .sede-chip-toggle{color:var(--red);}
+.sede-chip.active .sede-chip-toggle:hover{background:var(--red-dim);}
+.sede-chip:not(.active) .sede-chip-toggle{color:var(--green);}
+.sede-chip:not(.active) .sede-chip-toggle:hover{background:var(--green-dim);}
+.names-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;}
+.name-list{list-style:none;margin-top:12px;display:flex;flex-direction:column;gap:6px;}
+.name-item{display:flex;align-items:center;justify-content:space-between;background:var(--surface2);
+  border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:.85rem;}
+.btn-remove{background:none;border:none;color:var(--text3);cursor:pointer;font-size:1rem;padding:2px 6px;border-radius:4px;transition:all .2s;}
+.btn-remove:hover{color:var(--red);background:var(--red-dim);}
+.add-name-row{display:flex;gap:8px;margin-top:10px;}
+.btn-add{padding:10px 14px;background:var(--accent);border:none;border-radius:8px;color:white;
+  font-family:'Exo 2',sans-serif;font-weight:700;font-size:.85rem;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.btn-add:hover{background:var(--accent2);}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface3);border:1px solid var(--green);
+  border-radius:10px;padding:14px 20px;font-size:.9rem;color:var(--green);
+  transform:translateY(80px);opacity:0;transition:all .3s;z-index:999;font-family:'Exo 2',sans-serif;font-weight:600;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.error{border-color:var(--red);color:var(--red);}
+.toast.warn{border-color:var(--yellow);color:var(--yellow);}
+
+@media(max-width:1000px){
+  .turno-layout{grid-template-columns:1fr;}
+  .totals-row{grid-template-columns:1fr 1fr;}
+  .enc-grid{grid-template-columns:1fr;}
+  .solo-desc-grid{grid-template-columns:1fr 1fr;}
+}
 </style>
 </head>
 <body>
@@ -155,10 +221,17 @@
   <button class="tab-btn" onclick="showTab('admin',this)">⚙️ Personal</button>
 </header>
 
-<!-- ===== TURNO TAB ===== -->
+<!-- ══════════════ TURNO TAB ══════════════ -->
 <div id="tab-turno" class="tab-content active">
 <div class="turno-layout">
   <div class="sidebar">
+
+    <!-- Edit mode banner -->
+    <div class="edit-banner" id="edit-banner" style="display:none">
+      <span class="edit-banner-text">✏️ Editando turno guardado<br><span id="edit-banner-info" style="font-weight:400;font-size:.75rem;color:var(--text2)"></span></span>
+      <button onclick="cancelEdit()" style="padding:6px 12px;border:1px solid rgba(250,204,21,.4);border-radius:6px;background:none;color:var(--yellow);cursor:pointer;font-size:.78rem;font-weight:700;font-family:'Exo 2',sans-serif;">✕ Cancelar</button>
+    </div>
+
     <div class="card">
       <div class="card-title">Configuración</div>
       <div class="form-group">
@@ -173,68 +246,53 @@
         <label class="form-label">Turno</label>
         <div class="turno-toggle">
           <button class="turno-btn active" id="btn-mañana" onclick="setTurno('MAÑANA')">🌅 Mañana</button>
-          <button class="turno-btn" id="btn-tarde" onclick="setTurno('TARDE')">🌆 Tarde</button>
+          <button class="turno-btn" id="btn-tarde"  onclick="setTurno('TARDE')">🌆 Tarde</button>
         </div>
       </div>
     </div>
 
     <div class="card">
       <div class="card-title">Encargados</div>
-
-      <!-- Un solo encargado checkbox -->
       <div class="solo-toggle" id="solo-toggle-box" onclick="toggleSolo(event)">
         <input type="checkbox" class="solo-chk" id="solo-check">
-        <span class="solo-lbl">☝️ Un solo encargado<br><span style="font-weight:400;color:var(--text3);font-size:.72rem;">GLP + Líquido juntos</span></span>
+        <span class="solo-lbl">☝️ Un solo encargado<br><span style="font-weight:400;color:var(--text3);font-size:.72rem">GLP + Líquido juntos</span></span>
       </div>
-
-      <!-- Sección encargado único -->
       <div class="solo-section" id="solo-section">
         <label class="form-label">Encargado único (GLP + Líquido)</label>
-        <select id="enc-solo" onchange="updateLabels()">
-          <option value="">— Seleccionar —</option>
-        </select>
+        <select id="enc-solo" onchange="updateLabels()"><option value="">— Seleccionar —</option></select>
       </div>
-
-      <!-- Encargados separados -->
       <div id="enc-sep">
         <div class="form-group">
           <label class="form-label">Encargado GLP</label>
-          <select id="enc-glp" onchange="updateLabels()">
-            <option value="">— Seleccionar —</option>
-          </select>
+          <select id="enc-glp" onchange="updateLabels()"><option value="">— Seleccionar —</option></select>
         </div>
         <div class="form-group" style="margin-bottom:0">
           <label class="form-label">Encargado Líquido</label>
-          <select id="enc-liq" onchange="updateLabels()">
-            <option value="">— Seleccionar —</option>
-          </select>
+          <select id="enc-liq" onchange="updateLabels()"><option value="">— Seleccionar —</option></select>
         </div>
       </div>
     </div>
 
-    <button class="btn-save" onclick="guardarTurno()">💾 Guardar Turno</button>
+    <button class="btn-save" id="btn-guardar" onclick="guardarTurno()">💾 Guardar Turno</button>
   </div>
 
   <div class="main-area">
-    <!-- LÍQUIDO -->
     <div class="card">
       <div class="machines-header">
-        <div class="section-title">⛽ Máquinas Líquido <span style="color:var(--text3);font-size:.82rem;font-weight:400">(12 fijas)</span></div>
+        <div class="section-title">⛽ Máquinas Líquido <span style="color:var(--text3);font-size:.82rem;font-weight:400">(12)</span></div>
         <div id="total-liq-badge" class="badge">Total: 0.00</div>
       </div>
       <div class="machines-grid" id="liq-grid"></div>
     </div>
 
-    <!-- GLP -->
     <div class="card">
       <div class="machines-header">
-        <div class="section-title">🔵 Máquinas GLP <span style="color:var(--text3);font-size:.82rem;font-weight:400">(2 fijas)</span></div>
+        <div class="section-title">🔵 Máquinas GLP <span style="color:var(--text3);font-size:.82rem;font-weight:400">(2)</span></div>
         <div id="total-glp-badge" class="badge">Total: 0.00</div>
       </div>
       <div class="machines-grid" id="glp-grid"></div>
     </div>
 
-    <!-- TOTALES -->
     <div class="card">
       <div class="card-title">Resumen del Turno</div>
       <div class="totals-row">
@@ -244,7 +302,7 @@
       </div>
     </div>
 
-    <!-- CUADRE SEPARADO -->
+    <!-- Cuadre separado -->
     <div id="cuadre-sep" class="card">
       <div class="card-title">Cuadre de Caja</div>
       <div class="enc-grid">
@@ -267,11 +325,11 @@
       </div>
     </div>
 
-    <!-- CUADRE SOLO -->
+    <!-- Cuadre solo -->
     <div id="cuadre-solo" class="card" style="display:none">
       <div class="card-title">Cuadre de Caja — Encargado Único</div>
       <div class="solo-cuadre">
-        <div class="solo-cuadre-title">☝️ <span id="lbl-solo" style="color:var(--purple)">—</span> — responsable de GLP + Líquido</div>
+        <div class="solo-cuadre-title">☝️ <span id="lbl-solo" style="color:var(--purple)">—</span> — GLP + Líquido</div>
         <div class="solo-desc-grid">
           <div><div class="mini-label">Total Líquido</div><div class="desc-result" id="solo-calc-liq">S/ 0.00</div></div>
           <div><div class="mini-label">Total GLP</div><div class="desc-result" id="solo-calc-glp">S/ 0.00</div></div>
@@ -289,7 +347,7 @@
 </div>
 </div>
 
-<!-- ===== DESCUENTOS TAB ===== -->
+<!-- ══════════════ DESCUENTOS TAB ══════════════ -->
 <div id="tab-descuentos" class="tab-content">
 <div class="desc-tab-layout">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
@@ -302,16 +360,17 @@
 </div>
 </div>
 
-<!-- ===== HISTORIAL TAB ===== -->
+<!-- ══════════════ HISTORIAL TAB ══════════════ -->
 <div id="tab-historial" class="tab-content">
 <div class="hist-layout">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
     <h2 style="font-family:'Rajdhani',sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Historial de Turnos</h2>
-    <div style="display:flex;gap:8px;align-items:center;">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
       <select id="hist-filter" onchange="renderHistorial()" style="width:auto;padding:8px 12px;"></select>
       <button class="btn-filter" onclick="exportarCSV()">⬇️ CSV</button>
     </div>
   </div>
+  <p style="font-size:.8rem;color:var(--text3);margin-bottom:12px;">💡 Haz clic en cualquier fila para expandir las lecturas. Usa ✏️ para editar ese turno o 🗑️ para eliminarlo.</p>
   <div class="hist-table-wrap">
     <table>
       <thead><tr>
@@ -319,18 +378,20 @@
         <th>Enc. GLP</th><th>Enc. Líquido</th>
         <th>Total Líq.</th><th>Total GLP</th><th>Total</th>
         <th>Diff Líq.</th><th>Diff GLP</th><th>Modo</th>
+        <th>Acciones</th>
       </tr></thead>
-      <tbody id="hist-tbody"><tr><td colspan="11" style="text-align:center;color:var(--text3);padding:32px;">Sin registros</td></tr></tbody>
+      <tbody id="hist-tbody">
+        <tr><td colspan="12" style="text-align:center;color:var(--text3);padding:32px;">Sin registros</td></tr>
+      </tbody>
     </table>
   </div>
 </div>
 </div>
 
-<!-- ===== ADMIN TAB ===== -->
+<!-- ══════════════ ADMIN TAB ══════════════ -->
 <div id="tab-admin" class="tab-content">
 <div class="admin-layout">
   <h2 style="font-family:'Rajdhani',sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:24px;">⚙️ Personal y Sedes</h2>
-
   <div class="card" style="margin-bottom:24px;">
     <div class="card-title">Sedes</div>
     <p style="font-size:.82rem;color:var(--text2);margin-bottom:14px;">Activa o desactiva sedes. Mínimo una activa.</p>
@@ -340,12 +401,10 @@
       <button class="btn-add" onclick="addSede()">+ Agregar</button>
     </div>
   </div>
-
   <div class="card" style="margin-bottom:24px;">
     <div class="card-title">Personal por Sede</div>
     <div class="names-grid" id="names-grid"></div>
   </div>
-
   <div class="card">
     <div class="card-title">Zona de Peligro</div>
     <p style="color:var(--text2);font-size:.85rem;margin-bottom:12px;">Elimina todos los turnos. No se puede deshacer.</p>
@@ -357,30 +416,34 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ====== CONSTANTS ======
-const LIQ = 12, GLP = 2;
+// ══════════════════════════════════════
+//  CONSTANTS & STATE
+// ══════════════════════════════════════
+const LIQ=12, GLP_M=2;
 
-// ====== STATE ======
-const DEFAULT_NAMES = {
+const DEFAULT_NAMES={
   VERPASAR:['LUZMILA','SOCORRO','ROMARIO','GISELLA','ANGIE'],
   HUARAL:['FABRIZIO','PERCY','ISMAEL','DORA','CINTHIA','PABLO'],
   SERVICENTRO:['YADIRA','CARLOS','ELI','ANGELICA']
 };
-let S = {
+let S={
   names:       JSON.parse(localStorage.getItem('gf_names')||'null') || JSON.parse(JSON.stringify(DEFAULT_NAMES)),
   turnos:      JSON.parse(localStorage.getItem('gf_turnos')||'[]'),
   allSedes:    JSON.parse(localStorage.getItem('gf_allSedes')||'null') || ['VERPASAR','HUARAL','SERVICENTRO'],
   activeSedes: JSON.parse(localStorage.getItem('gf_activeSedes')||'null') || ['VERPASAR','HUARAL','SERVICENTRO'],
-  turno:'MAÑANA', soloMode:false
+  turno:'MAÑANA', soloMode:false,
+  editId:null    // ID of turno being edited (null = new turno)
 };
 function persist(){
-  localStorage.setItem('gf_names',JSON.stringify(S.names));
-  localStorage.setItem('gf_turnos',JSON.stringify(S.turnos));
-  localStorage.setItem('gf_allSedes',JSON.stringify(S.allSedes));
-  localStorage.setItem('gf_activeSedes',JSON.stringify(S.activeSedes));
+  localStorage.setItem('gf_names',       JSON.stringify(S.names));
+  localStorage.setItem('gf_turnos',      JSON.stringify(S.turnos));
+  localStorage.setItem('gf_allSedes',    JSON.stringify(S.allSedes));
+  localStorage.setItem('gf_activeSedes', JSON.stringify(S.activeSedes));
 }
 
-// ====== TABS ======
+// ══════════════════════════════════════
+//  TABS
+// ══════════════════════════════════════
 function showTab(id,btn){
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
@@ -391,7 +454,9 @@ function showTab(id,btn){
   if(id==='admin'){renderAdminSedes();renderNamesGrid();}
 }
 
-// ====== INIT ======
+// ══════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════
 document.getElementById('fecha').value=new Date().toISOString().split('T')[0];
 function init(){
   buildSedeSelect();
@@ -399,51 +464,56 @@ function init(){
   updatePersonal();
 }
 
-// ====== SEDE SELECT ======
+// ══════════════════════════════════════
+//  SEDE SELECT
+// ══════════════════════════════════════
 function buildSedeSelect(){
   const sel=document.getElementById('sede');
   const prev=sel.value;
   sel.innerHTML='';
-  S.activeSedes.forEach(s=>{
-    const o=document.createElement('option');
-    o.value=s;o.textContent=s;sel.appendChild(o);
-  });
-  if(S.activeSedes.includes(prev)) sel.value=prev;
+  S.activeSedes.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;sel.appendChild(o);});
+  if(S.activeSedes.includes(prev))sel.value=prev;
   onSedeChange();
 }
 function onSedeChange(){updatePersonal();updateLabels();}
 
-// ====== TURNO ======
+// ══════════════════════════════════════
+//  TURNO BUTTON
+// ══════════════════════════════════════
 function setTurno(t){
   S.turno=t;
   document.getElementById('btn-mañana').classList.toggle('active',t==='MAÑANA');
   document.getElementById('btn-tarde').classList.toggle('active',t==='TARDE');
 }
 
-// ====== SOLO MODE ======
+// ══════════════════════════════════════
+//  SOLO MODE
+// ══════════════════════════════════════
 function toggleSolo(e){
-  // prevent double-fire when clicking checkbox itself
-  if(e && e.target.tagName==='INPUT') return;
+  if(e&&e.target.tagName==='INPUT')return;
   const chk=document.getElementById('solo-check');
   chk.checked=!chk.checked;
   S.soloMode=chk.checked;
   _applySoloUI();
 }
-document.getElementById('solo-check').addEventListener('change',function(){
-  S.soloMode=this.checked;
-  _applySoloUI();
-});
+document.getElementById('solo-check').addEventListener('change',function(){S.soloMode=this.checked;_applySoloUI();});
 function _applySoloUI(){
-  const box=document.getElementById('solo-toggle-box');
-  box.classList.toggle('active',S.soloMode);
+  document.getElementById('solo-toggle-box').classList.toggle('active',S.soloMode);
   document.getElementById('solo-section').classList.toggle('visible',S.soloMode);
   document.getElementById('enc-sep').style.display=S.soloMode?'none':'block';
   document.getElementById('cuadre-sep').style.display=S.soloMode?'none':'block';
   document.getElementById('cuadre-solo').style.display=S.soloMode?'block':'none';
   updateLabels();
 }
+function setSoloMode(val){
+  S.soloMode=val;
+  document.getElementById('solo-check').checked=val;
+  _applySoloUI();
+}
 
-// ====== PERSONAL ======
+// ══════════════════════════════════════
+//  PERSONAL DROPDOWNS
+// ══════════════════════════════════════
 function updatePersonal(){
   const sede=document.getElementById('sede').value;
   const names=S.names[sede]||[];
@@ -452,7 +522,7 @@ function updatePersonal(){
     const prev=sel.value;
     sel.innerHTML='<option value="">— Seleccionar —</option>';
     names.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o);});
-    if(names.includes(prev)) sel.value=prev;
+    if(names.includes(prev))sel.value=prev;
   });
   updateLabels();
 }
@@ -460,13 +530,15 @@ function updateLabels(){
   document.getElementById('lbl-liq').textContent=document.getElementById('enc-liq').value||'—';
   document.getElementById('lbl-glp').textContent=document.getElementById('enc-glp').value||'—';
   document.getElementById('lbl-solo').textContent=document.getElementById('enc-solo').value||'—';
-  calcDesc(); calcDescSolo();
+  calcDesc();calcDescSolo();
 }
 
-// ====== MACHINES (FIXED 12 LIQ + 2 GLP) ======
+// ══════════════════════════════════════
+//  MACHINES (fixed 12 liq + 2 glp)
+// ══════════════════════════════════════
 function renderMachines(){
   buildGrid('liq-grid','liq',LIQ);
-  buildGrid('glp-grid','glp',GLP);
+  buildGrid('glp-grid','glp',GLP_M);
 }
 function buildGrid(gridId,type,count){
   const g=document.getElementById(gridId);g.innerHTML='';
@@ -497,14 +569,11 @@ function onMachine(type,i){
 }
 function getTotal(type,count){
   let t=0;
-  for(let i=1;i<=count;i++){
-    t+=(parseFloat(document.getElementById(`${type}-c-${i}`)?.value)||0)
-      -(parseFloat(document.getElementById(`${type}-p-${i}`)?.value)||0);
-  }
+  for(let i=1;i<=count;i++) t+=(parseFloat(document.getElementById(`${type}-c-${i}`)?.value)||0)-(parseFloat(document.getElementById(`${type}-p-${i}`)?.value)||0);
   return t;
 }
 function updateTotals(){
-  const lt=getTotal('liq',LIQ),gt=getTotal('glp',GLP),tt=lt+gt;
+  const lt=getTotal('liq',LIQ),gt=getTotal('glp',GLP_M),tt=lt+gt;
   document.getElementById('sum-liq').textContent='S/ '+fmt(lt);
   document.getElementById('sum-glp').textContent='S/ '+fmt(gt);
   document.getElementById('sum-total').textContent='S/ '+fmt(tt);
@@ -517,29 +586,41 @@ function updateTotals(){
   calcDesc();calcDescSolo();
 }
 
-// ====== CUADRE SEPARADO ======
-function calcDesc(){
-  const lt=getTotal('liq',LIQ),gt=getTotal('glp',GLP);
-  const el=parseFloat(document.getElementById('ent-liq').value)||0;
-  const eg=parseFloat(document.getElementById('ent-glp').value)||0;
-  setDiff('diff-liq',el>0?el-lt:null);
-  setDiff('diff-glp',eg>0?eg-gt:null);
+// Carry previous readings from a saved turno into the "Lect. Anterior" fields
+function carryForward(machines){
+  if(!machines)return;
+  (machines.liq||[]).forEach((m,i)=>{
+    const el=document.getElementById(`liq-p-${i+1}`);
+    if(el&&m.c!==undefined)el.value=m.c;
+  });
+  (machines.glp||[]).forEach((m,i)=>{
+    const el=document.getElementById(`glp-p-${i+1}`);
+    if(el&&m.c!==undefined)el.value=m.c;
+  });
+  // Recompute diffs
+  for(let i=1;i<=LIQ;i++) onMachine('liq',i);
+  for(let i=1;i<=GLP_M;i++) onMachine('glp',i);
 }
 
-// ====== CUADRE SOLO ======
+// ══════════════════════════════════════
+//  CUADRE CALCULATIONS
+// ══════════════════════════════════════
+function calcDesc(){
+  const lt=getTotal('liq',LIQ),gt=getTotal('glp',GLP_M);
+  setDiff('diff-liq',(parseFloat(document.getElementById('ent-liq').value)||0)>0?(parseFloat(document.getElementById('ent-liq').value)||0)-lt:null);
+  setDiff('diff-glp',(parseFloat(document.getElementById('ent-glp').value)||0)>0?(parseFloat(document.getElementById('ent-glp').value)||0)-gt:null);
+}
 function calcDescSolo(){
-  const lt=getTotal('liq',LIQ),gt=getTotal('glp',GLP);
+  const lt=getTotal('liq',LIQ),gt=getTotal('glp',GLP_M);
   const el=parseFloat(document.getElementById('solo-ent-liq').value)||0;
   const eg=parseFloat(document.getElementById('solo-ent-glp').value)||0;
-  const dl=el>0?el-lt:null;
-  const dg=eg>0?eg-gt:null;
-  setDiff('solo-diff-liq',dl);
-  setDiff('solo-diff-glp',dg);
-  const bal=document.getElementById('solo-balance');
-  if(dl!==null&&dg!==null){const b=dl+dg;bal.textContent=(b>=0?'+':'')+fmt(b);bal.className='desc-result '+(b>0?'positive':b<0?'negative':'');}
-  else if(dl!==null){bal.textContent=(dl>=0?'+':'')+fmt(dl);bal.className='desc-result '+(dl>0?'positive':dl<0?'negative':'');}
-  else if(dg!==null){bal.textContent=(dg>=0?'+':'')+fmt(dg);bal.className='desc-result '+(dg>0?'positive':dg<0?'negative':'');}
-  else{bal.textContent='—';bal.className='desc-result';}
+  const dl=el>0?el-lt:null, dg=eg>0?eg-gt:null;
+  setDiff('solo-diff-liq',dl); setDiff('solo-diff-glp',dg);
+  const balEl=document.getElementById('solo-balance');
+  if(dl!==null&&dg!==null){const b=dl+dg;balEl.textContent=(b>=0?'+':'')+fmt(b);balEl.className='desc-result '+(b>0?'positive':b<0?'negative':'');}
+  else if(dl!==null){balEl.textContent=(dl>=0?'+':'')+fmt(dl);balEl.className='desc-result '+(dl>0?'positive':dl<0?'negative':'');}
+  else if(dg!==null){balEl.textContent=(dg>=0?'+':'')+fmt(dg);balEl.className='desc-result '+(dg>0?'positive':dg<0?'negative':'');}
+  else{balEl.textContent='—';balEl.className='desc-result';}
 }
 function setDiff(id,val){
   const el=document.getElementById(id);if(!el)return;
@@ -548,12 +629,24 @@ function setDiff(id,val){
   el.className='desc-result '+(val>0?'positive':val<0?'negative':'');
 }
 
-// ====== GUARDAR ======
+// ══════════════════════════════════════
+//  COLLECT FORM STATE
+// ══════════════════════════════════════
+function collectMachines(){
+  const machines={liq:[],glp:[]};
+  for(let i=1;i<=LIQ;i++) machines.liq.push({p:parseFloat(document.getElementById(`liq-p-${i}`)?.value)||0,c:parseFloat(document.getElementById(`liq-c-${i}`)?.value)||0});
+  for(let i=1;i<=GLP_M;i++) machines.glp.push({p:parseFloat(document.getElementById(`glp-p-${i}`)?.value)||0,c:parseFloat(document.getElementById(`glp-c-${i}`)?.value)||0});
+  return machines;
+}
+
+// ══════════════════════════════════════
+//  GUARDAR / UPDATE TURNO
+// ══════════════════════════════════════
 function guardarTurno(){
   const sede=document.getElementById('sede').value;
   const fecha=document.getElementById('fecha').value;
   if(!fecha){toast('⚠️ Selecciona una fecha',true);return;}
-  const lt=getTotal('liq',LIQ),gt=getTotal('glp',GLP);
+  const lt=getTotal('liq',LIQ),gt=getTotal('glp',GLP_M);
   let encGlp,encLiq,entL,entG,diffL,diffG;
   if(S.soloMode){
     const solo=document.getElementById('enc-solo').value;
@@ -569,27 +662,136 @@ function guardarTurno(){
   }
   diffL=entL>0?entL-lt:null;
   diffG=entG>0?entG-gt:null;
+  const machines=collectMachines();
 
-  const machines={liq:[],glp:[]};
-  for(let i=1;i<=LIQ;i++) machines.liq.push({p:parseFloat(document.getElementById(`liq-p-${i}`)?.value)||0,c:parseFloat(document.getElementById(`liq-c-${i}`)?.value)||0});
-  for(let i=1;i<=GLP;i++) machines.glp.push({p:parseFloat(document.getElementById(`glp-p-${i}`)?.value)||0,c:parseFloat(document.getElementById(`glp-c-${i}`)?.value)||0});
+  if(S.editId!==null){
+    // UPDATE existing record
+    const idx=S.turnos.findIndex(t=>t.id===S.editId);
+    if(idx>=0){
+      S.turnos[idx]={...S.turnos[idx],sede,fecha,turno:S.turno,encGlp,encLiq,solo:S.soloMode,
+        liqTotal:lt,glpTotal:gt,total:lt+gt,entL,entG,diffL,diffG,machines};
+    }
+    persist();
+    toast('✅ Turno actualizado');
+    cancelEdit();
+    return;
+  }
 
-  S.turnos.push({id:Date.now(),sede,fecha,turno:S.turno,encGlp,encLiq,solo:S.soloMode,liqTotal:lt,glpTotal:gt,total:lt+gt,entL,entG,diffL,diffG,machines});
-  persist();toast('✅ Turno guardado');
-  // reset
+  // NEW record — after saving, carry current readings forward as prev
+  const newRecord={id:Date.now(),sede,fecha,turno:S.turno,encGlp,encLiq,solo:S.soloMode,
+    liqTotal:lt,glpTotal:gt,total:lt+gt,entL,entG,diffL,diffG,machines};
+  S.turnos.push(newRecord);
+  persist();
+  toast('✅ Turno guardado — lecturas actuales pasadas a "Anterior"');
+
+  // Carry forward: actual → anterior
+  for(let i=1;i<=LIQ;i++){
+    const curr=document.getElementById(`liq-c-${i}`);
+    const prev=document.getElementById(`liq-p-${i}`);
+    if(curr&&prev){prev.value=curr.value;curr.value='';}
+    const d=document.getElementById(`liq-d-${i}`);if(d){d.textContent='—';d.className='diff-display';}
+  }
+  for(let i=1;i<=GLP_M;i++){
+    const curr=document.getElementById(`glp-c-${i}`);
+    const prev=document.getElementById(`glp-p-${i}`);
+    if(curr&&prev){prev.value=curr.value;curr.value='';}
+    const d=document.getElementById(`glp-d-${i}`);if(d){d.textContent='—';d.className='diff-display';}
+  }
+  // Reset entrego & diffs
   ['ent-liq','ent-glp','solo-ent-liq','solo-ent-glp'].forEach(id=>document.getElementById(id).value='');
   ['diff-liq','diff-glp','solo-diff-liq','solo-diff-glp','solo-balance'].forEach(id=>{const e=document.getElementById(id);if(e){e.textContent='—';e.className='desc-result';}});
+  updateTotals();
 }
 
-// ====== DESCUENTOS ======
+// ══════════════════════════════════════
+//  EDIT MODE
+// ══════════════════════════════════════
+function loadTurnoForEdit(id){
+  const t=S.turnos.find(x=>x.id===id);
+  if(!t)return;
+  S.editId=id;
+
+  // Switch to turno tab
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{b.classList.toggle('active',i===0);});
+  document.querySelectorAll('.tab-content').forEach((c,i)=>{c.classList.toggle('active',i===0);});
+
+  // Show banner
+  document.getElementById('edit-banner').style.display='flex';
+  document.getElementById('edit-banner-info').textContent=`${t.fecha}  •  ${t.sede}  •  ${t.turno}`;
+  document.getElementById('btn-guardar').textContent='✏️ Actualizar Turno';
+  document.getElementById('btn-guardar').style.background='linear-gradient(135deg,var(--yellow),#d97706)';
+  document.getElementById('btn-guardar').style.boxShadow='0 4px 20px rgba(250,204,21,.3)';
+
+  // Fill sede & date & turno
+  // Rebuild sede select in case needed
+  buildSedeSelect();
+  document.getElementById('sede').value=t.sede; onSedeChange();
+  document.getElementById('fecha').value=t.fecha;
+  setTurno(t.turno);
+
+  // Fill encargados
+  setSoloMode(t.solo||false);
+  if(t.solo){
+    document.getElementById('enc-solo').value=t.encGlp;
+  } else {
+    document.getElementById('enc-glp').value=t.encGlp||'';
+    document.getElementById('enc-liq').value=t.encLiq||'';
+  }
+  updateLabels();
+
+  // Fill machine readings
+  (t.machines.liq||[]).forEach((m,i)=>{
+    const p=document.getElementById(`liq-p-${i+1}`);
+    const c=document.getElementById(`liq-c-${i+1}`);
+    if(p)p.value=m.p||''; if(c)c.value=m.c||'';
+    onMachine('liq',i+1);
+  });
+  (t.machines.glp||[]).forEach((m,i)=>{
+    const p=document.getElementById(`glp-p-${i+1}`);
+    const c=document.getElementById(`glp-c-${i+1}`);
+    if(p)p.value=m.p||''; if(c)c.value=m.c||'';
+    onMachine('glp',i+1);
+  });
+
+  // Fill entrego
+  if(t.solo){
+    document.getElementById('solo-ent-liq').value=t.entL||'';
+    document.getElementById('solo-ent-glp').value=t.entG||'';
+    calcDescSolo();
+  } else {
+    document.getElementById('ent-liq').value=t.entL||'';
+    document.getElementById('ent-glp').value=t.entG||'';
+    calcDesc();
+  }
+
+  window.scrollTo({top:0,behavior:'smooth'});
+  toast('✏️ Editando turno del '+t.fecha,false,'warn');
+}
+
+function cancelEdit(){
+  S.editId=null;
+  document.getElementById('edit-banner').style.display='none';
+  document.getElementById('btn-guardar').textContent='💾 Guardar Turno';
+  document.getElementById('btn-guardar').style.background='linear-gradient(135deg,var(--accent),#ea580c)';
+  document.getElementById('btn-guardar').style.boxShadow='0 4px 20px rgba(249,115,22,.3)';
+}
+
+function deleteTurno(id, e){
+  e.stopPropagation();
+  if(!confirm('¿Eliminar este turno? No se puede deshacer.'))return;
+  S.turnos=S.turnos.filter(t=>t.id!==id);
+  persist();renderHistorial();toast('🗑️ Turno eliminado');
+}
+
+// ══════════════════════════════════════
+//  DESCUENTOS
+// ══════════════════════════════════════
 function buildDescFilters(){
   const div=document.getElementById('desc-filters');
   div.innerHTML='<button class="btn-filter active" onclick="filterD(\'TODAS\',this)">Todas</button>';
   S.activeSedes.forEach(s=>{
-    const b=document.createElement('button');
-    b.className='btn-filter';b.textContent=s;
-    b.onclick=function(){filterD(s,this);};
-    div.appendChild(b);
+    const b=document.createElement('button');b.className='btn-filter';b.textContent=s;
+    b.onclick=function(){filterD(s,this);};div.appendChild(b);
   });
 }
 function filterD(sede,btn){
@@ -606,7 +808,7 @@ function renderDesc(filter){
       if(!n||d===null||d===undefined)return;
       if(!W[n])W[n]={sede:t.sede,faltante:0,sobrante:0,turnos:0};
       W[n].turnos++;
-      if(d<0)W[n].faltante+=d;else if(d>0)W[n].sobrante+=d;
+      if(d<0)W[n].faltante+=d; else if(d>0)W[n].sobrante+=d;
     });
   });
   if(!Object.keys(W).length){grid.innerHTML='<div class="empty-state"><div class="icon">💰</div><p>Sin datos para esta sede</p></div>';return;}
@@ -626,7 +828,9 @@ function renderDesc(filter){
   });
 }
 
-// ====== HISTORIAL ======
+// ══════════════════════════════════════
+//  HISTORIAL
+// ══════════════════════════════════════
 function buildHistFilter(){
   const sel=document.getElementById('hist-filter');
   const prev=sel.value;
@@ -634,31 +838,111 @@ function buildHistFilter(){
   S.activeSedes.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;sel.appendChild(o);});
   if(prev)sel.value=prev;
 }
+
+let expandedIds=new Set();
+
 function renderHistorial(){
   const tbody=document.getElementById('hist-tbody');
   const f=document.getElementById('hist-filter').value;
   const rows=S.turnos.filter(t=>f==='TODAS'||t.sede===f);
-  if(!rows.length){tbody.innerHTML='<tr><td colspan="11" style="text-align:center;color:var(--text3);padding:32px;">Sin registros</td></tr>';return;}
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:var(--text3);padding:32px;">Sin registros</td></tr>';return;}
   tbody.innerHTML='';
   [...rows].reverse().forEach(t=>{
+    const isEditing=S.editId===t.id;
+    // Main row
     const r=document.createElement('tr');
+    if(isEditing)r.classList.add('editing');
+    r.id='hr-'+t.id;
+    const liqDisp=t.encLiq&&t.solo?'<span style="color:var(--purple);font-size:.72rem">= GLP</span>':(t.encLiq||'—');
     r.innerHTML=`
-      <td>${t.fecha}</td><td>${t.sede}</td>
+      <td style="color:var(--text);font-weight:600">${t.fecha}</td>
+      <td>${t.sede}</td>
       <td><span class="turno-tag ${t.turno==='MAÑANA'?'m':'t'}">${t.turno}</span></td>
-      <td>${t.encGlp||'—'}</td>
-      <td>${t.solo?'<span style="color:var(--purple);font-size:.72rem">= GLP</span>':(t.encLiq||'—')}</td>
-      <td>${fmt(t.liqTotal)}</td><td>${fmt(t.glpTotal)}</td>
+      <td style="color:var(--text)">${t.encGlp||'—'}</td>
+      <td>${liqDisp}</td>
+      <td>${fmt(t.liqTotal)}</td>
+      <td>${fmt(t.glpTotal)}</td>
       <td style="color:var(--accent);font-weight:600">${fmt(t.total)}</td>
       <td class="${t.diffL===null?'':t.diffL>=0?'val-pos':'val-neg'}">${t.diffL!==null?(t.diffL>=0?'+':'')+fmt(t.diffL):'—'}</td>
       <td class="${t.diffG===null?'':t.diffG>=0?'val-pos':'val-neg'}">${t.diffG!==null?(t.diffG>=0?'+':'')+fmt(t.diffG):'—'}</td>
-      <td>${t.solo?'<span style="color:var(--purple)">☝️</span>':'—'}</td>`;
+      <td>${t.solo?'<span style="color:var(--purple)">☝️</span>':'—'}</td>
+      <td style="white-space:nowrap">
+        <button class="expand-btn" onclick="toggleExpand(${t.id},event)">${expandedIds.has(t.id)?'▲ Ocultar':'▼ Lecturas'}</button>
+        <button class="edit-row-btn" onclick="loadTurnoForEdit(${t.id});event.stopPropagation()">✏️ Editar</button>
+        <button class="del-row-btn" onclick="deleteTurno(${t.id},event)">🗑️</button>
+      </td>`;
+    r.onclick=()=>toggleExpand(t.id,null);
     tbody.appendChild(r);
+
+    // Detail row (expandable)
+    if(expandedIds.has(t.id)){
+      const dr=document.createElement('tr');
+      dr.className='hist-detail-row';dr.id='hd-'+t.id;
+      const tdContent=buildDetailHTML(t);
+      dr.innerHTML=`<td colspan="12">${tdContent}</td>`;
+      tbody.appendChild(dr);
+    }
   });
 }
+
+function toggleExpand(id,e){
+  if(e)e.stopPropagation();
+  if(expandedIds.has(id)) expandedIds.delete(id);
+  else expandedIds.add(id);
+  renderHistorial();
+}
+
+function buildDetailHTML(t){
+  let html=`<div style="padding:4px 0">`;
+  // Encargados summary
+  html+=`<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px;">`;
+  html+=`<div style="background:var(--blue-dim);border:1px solid rgba(56,189,248,.2);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--blue)">💧 Líquido: <strong>${t.encLiq||'—'}</strong>${t.solo?' (único encargado)':''}</div>`;
+  html+=`<div style="background:var(--purple-dim);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--purple)">🔵 GLP: <strong>${t.encGlp||'—'}</strong></div>`;
+  if(t.entL>0) html+=`<div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--text2)">💧 Entregó Líq: <strong style="color:var(--text);font-family:'DM Mono',monospace">${fmt(t.entL)}</strong></div>`;
+  if(t.entG>0) html+=`<div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--text2)">🔵 Entregó GLP: <strong style="color:var(--text);font-family:'DM Mono',monospace">${fmt(t.entG)}</strong></div>`;
+  html+=`</div>`;
+
+  // Liquid machines
+  if(t.machines&&t.machines.liq&&t.machines.liq.length){
+    html+=`<div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:8px;font-weight:600">⛽ Lecturas Líquido</div>`;
+    html+=`<div class="machines-detail-grid">`;
+    t.machines.liq.forEach((m,i)=>{
+      const diff=m.c-m.p;
+      html+=`<div class="mdet-card">
+        <div class="mdet-title">Maq. LIQ ${i+1}</div>
+        <div class="mdet-row"><span class="k">Anterior</span><span class="v">${fmt(m.p)}</span></div>
+        <div class="mdet-row"><span class="k">Actual</span><span class="v">${fmt(m.c)}</span></div>
+        <div class="mdet-row"><span class="k">Venta</span><span class="diff${diff<0?' neg':''}">${fmt(diff)}</span></div>
+      </div>`;
+    });
+    html+=`</div>`;
+  }
+
+  // GLP machines
+  if(t.machines&&t.machines.glp&&t.machines.glp.length){
+    html+=`<div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin:12px 0 8px;font-weight:600">🔵 Lecturas GLP</div>`;
+    html+=`<div class="machines-detail-grid">`;
+    t.machines.glp.forEach((m,i)=>{
+      const diff=m.c-m.p;
+      html+=`<div class="mdet-card">
+        <div class="mdet-title">Maq. GLP ${i+1}</div>
+        <div class="mdet-row"><span class="k">Anterior</span><span class="v">${fmt(m.p)}</span></div>
+        <div class="mdet-row"><span class="k">Actual</span><span class="v">${fmt(m.c)}</span></div>
+        <div class="mdet-row"><span class="k">Venta</span><span class="diff${diff<0?' neg':''}">${fmt(diff)}</span></div>
+      </div>`;
+    });
+    html+=`</div>`;
+  }
+  html+=`</div>`;
+  return html;
+}
+
 function exportarCSV(){
   if(!S.turnos.length){toast('No hay datos',true);return;}
   const h=['Fecha','Sede','Turno','Enc.GLP','Enc.Liquido','Solo','Total Liq','Total GLP','Total','Diff Liq','Diff GLP'];
-  const rows=S.turnos.map(t=>[t.fecha,t.sede,t.turno,t.encGlp||'',t.encLiq||'',t.solo?'SI':'NO',t.liqTotal.toFixed(2),t.glpTotal.toFixed(2),t.total.toFixed(2),t.diffL!==null?t.diffL.toFixed(2):'',t.diffG!==null?t.diffG.toFixed(2):'']);
+  const rows=S.turnos.map(t=>[t.fecha,t.sede,t.turno,t.encGlp||'',t.encLiq||'',t.solo?'SI':'NO',
+    t.liqTotal.toFixed(2),t.glpTotal.toFixed(2),t.total.toFixed(2),
+    t.diffL!==null?t.diffL.toFixed(2):'',t.diffG!==null?t.diffG.toFixed(2):'']);
   const csv=[h,...rows].map(r=>r.join(',')).join('\n');
   const a=document.createElement('a');
   a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
@@ -666,7 +950,9 @@ function exportarCSV(){
   a.click();toast('✅ CSV exportado');
 }
 
-// ====== ADMIN — SEDES ======
+// ══════════════════════════════════════
+//  ADMIN — SEDES
+// ══════════════════════════════════════
 function renderAdminSedes(){
   const div=document.getElementById('sedes-list');div.innerHTML='';
   S.allSedes.forEach(s=>{
@@ -678,12 +964,8 @@ function renderAdminSedes(){
 }
 function toggleSede(s){
   const idx=S.activeSedes.indexOf(s);
-  if(idx>=0){
-    if(S.activeSedes.length<=1){toast('⚠️ Mínimo una sede activa',true);return;}
-    S.activeSedes.splice(idx,1);
-  } else {
-    S.activeSedes.push(s);
-  }
+  if(idx>=0){if(S.activeSedes.length<=1){toast('⚠️ Mínimo una sede activa',true);return;}S.activeSedes.splice(idx,1);}
+  else S.activeSedes.push(s);
   persist();renderAdminSedes();renderNamesGrid();buildSedeSelect();
 }
 function addSede(){
@@ -693,12 +975,13 @@ function addSede(){
   if(S.allSedes.includes(name)){toast('Esa sede ya existe',true);return;}
   S.allSedes.push(name);S.activeSedes.push(name);
   if(!S.names[name])S.names[name]=[];
-  persist();inp.value='';
-  renderAdminSedes();renderNamesGrid();buildSedeSelect();
+  persist();inp.value='';renderAdminSedes();renderNamesGrid();buildSedeSelect();
   toast('✅ Sede '+name+' creada');
 }
 
-// ====== ADMIN — PERSONAL ======
+// ══════════════════════════════════════
+//  ADMIN — PERSONAL
+// ══════════════════════════════════════
 function renderNamesGrid(){
   const g=document.getElementById('names-grid');g.innerHTML='';
   S.allSedes.forEach(sede=>{
@@ -708,7 +991,8 @@ function renderNamesGrid(){
       <div class="card-title" style="${active?'':'color:var(--text3)'}">${sede}${active?'':' <span style="font-size:.6rem;color:var(--text3)">(inactiva)</span>'}</div>
       <ul class="name-list" id="nl-${sede}"></ul>
       <div class="add-name-row">
-        <input type="text" id="nn-${sede}" placeholder="Nombre..." style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')addName('${sede}')">
+        <input type="text" id="nn-${sede}" placeholder="Nombre..." style="text-transform:uppercase"
+          oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')addName('${sede}')">
         <button class="btn-add" onclick="addName('${sede}')">+</button>
       </div>`;
     g.appendChild(col);
@@ -735,18 +1019,23 @@ function removeName(sede,name){
 }
 function clearAll(){
   if(!confirm('¿Eliminar TODOS los turnos? No se puede deshacer.'))return;
-  S.turnos=[];persist();toast('🗑️ Datos eliminados');
+  S.turnos=[];expandedIds.clear();persist();toast('🗑️ Datos eliminados');
 }
 
-// ====== UTILS ======
+// ══════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════
 function fmt(n){return(Math.abs(n)<0.001?0:n).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2});}
-function toast(msg,err){
+function toast(msg,err,type){
   const el=document.getElementById('toast');
-  el.textContent=msg;el.className='toast show'+(err?' error':'');
-  setTimeout(()=>el.classList.remove('show'),3000);
+  el.textContent=msg;
+  el.className='toast show'+(err?' error':type==='warn'?' warn':'');
+  setTimeout(()=>el.classList.remove('show'),3500);
 }
 
-// ====== START ======
+// ══════════════════════════════════════
+//  START
+// ══════════════════════════════════════
 init();
 </script>
 </body>
