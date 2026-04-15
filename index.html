@@ -290,7 +290,6 @@ tr:last-child td{border-bottom:none;}
   <button class="tab-btn"        id="tb-descuentos"  onclick="showTab('descuentos',this)">💰 Descuentos</button>
   <button class="tab-btn"        id="tb-historial"   onclick="showTab('historial',this)">📊 Historial</button>
   <button class="tab-btn"        id="tb-admin"       onclick="showTab('admin',this)">⚙️ Personal</button>
-  <button onclick="descargarBackup()" style="background: #38bdf8; color: black; padding: 10px; border-radius: 5px; cursor: pointer;">💾 Descargar Backup</button>
   <button class="logout-btn" onclick="doLogout()">🚪 Salir</button>
 </header>
 
@@ -1147,7 +1146,6 @@ database.ref('/').on('value', (snapshot) => {
   updatePersonal();
   // Si tienes otras funciones que cargan la tabla, ponlas aquí.
 });
-</script>
 const firebaseConfig = {
   apiKey: "AIzaSyAoE4btWUOQCpCJ0_XU3NJlbET7yj1a3Z0",
   authDomain: "grifo-cuentas.firebaseapp.com",
@@ -1159,5 +1157,6 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
+</script>
 </body>
 </html>
