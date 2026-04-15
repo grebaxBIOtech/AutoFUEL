@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sistema de Cuentas — Grifo Control</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Exo+2:wght@300;400;600;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <style>
 :root{
   --bg:#0d1117;--surface:#161b22;--surface2:#1c2230;--surface3:#21293a;
@@ -252,8 +254,6 @@ tr:last-child td{border-bottom:none;}
   .login-box{padding:36px 24px;}
 }
 </style>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
 
@@ -1146,6 +1146,11 @@ database.ref('/').on('value', (snapshot) => {
   updatePersonal();
   // Si tienes otras funciones que cargan la tabla, ponlas aquí.
 });
+// ═══════════════════════════════════════════
+//  FIREBASE - CONFIGURACIÓN Y SINCRONIZACIÓN
+// ═══════════════════════════════════════════
+
+// 1. LAS LLAVES VAN PRIMERO
 const firebaseConfig = {
   apiKey: "AIzaSyAoE4btWUOQCpCJ0_XU3NJlbET7yj1a3Z0",
   authDomain: "grifo-cuentas.firebaseapp.com",
@@ -1155,8 +1160,34 @@ const firebaseConfig = {
   messagingSenderId: "808530939788",
   appId: "1:808530939788:web:82f7beab150d0b1b7a50a9"
 };
-firebase.initializeApp(firebaseConfig);
+
+// 2. INICIAMOS LA CONEXIÓN
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 const database = firebase.database();
+
+// 3. REEMPLAZAMOS EL GUARDADO (PERSIST) A LA NUBE
+// (Esto sobreescribe tu guardado local antiguo)
+window.persist = function() {
+  database.ref('/').set(S).then(() => {
+    console.log("Sincronizado con la nube ☁️");
+  }).catch(err => console.error("Error al guardar:", err));
+};
+
+// 4. LEEMOS LA NUBE EN TIEMPO REAL
+database.ref('/').on('value', (snapshot) => {
+  const datosNube = snapshot.val();
+  
+  if (datosNube) {
+    S = datosNube; // Actualizamos los datos
+  }
+  
+  // Dibujamos de nuevo la pantalla
+  if (typeof renderNamesGrid === 'function') renderNamesGrid();
+  if (typeof updatePersonal === 'function') updatePersonal();
+  if (typeof renderAll === 'function') renderAll();
+});
 </script>
 </body>
 </html>
