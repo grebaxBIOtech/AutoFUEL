@@ -288,6 +288,7 @@ tr:last-child td{border-bottom:none;}
   <button class="tab-btn"        id="tb-descuentos"  onclick="showTab('descuentos',this)">💰 Descuentos</button>
   <button class="tab-btn"        id="tb-historial"   onclick="showTab('historial',this)">📊 Historial</button>
   <button class="tab-btn"        id="tb-admin"       onclick="showTab('admin',this)">⚙️ Personal</button>
+  <button onclick="descargarBackup()" style="background: #38bdf8; color: black; padding: 10px; border-radius: 5px; cursor: pointer;">💾 Descargar Backup</button>
   <button class="logout-btn" onclick="doLogout()">🚪 Salir</button>
 </header>
 
@@ -1132,6 +1133,19 @@ function toast(msg,err,type){
   el.textContent=msg;
   el.className='toast show'+(err?' error':type==='warn'?' warn':'');
   setTimeout(()=>el.classList.remove('show'),3500);
+}
+function descargarBackup() {
+  // Convierte tu variable principal 'S' a texto JSON
+  const dataStr = JSON.stringify(S); 
+  const blob = new Blob([dataStr], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = "backup_grifo_datos.json"; // Nombre del archivo
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 </script>
 </body>
