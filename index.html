@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sistema de Cuentas — Grifo Control</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Exo+2:wght@300;400;600;800&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <style>
 :root{
   --bg:#0d1117;--surface:#161b22;--surface2:#1c2230;--surface3:#21293a;
@@ -290,6 +288,7 @@ tr:last-child td{border-bottom:none;}
   <button class="tab-btn"        id="tb-descuentos"  onclick="showTab('descuentos',this)">💰 Descuentos</button>
   <button class="tab-btn"        id="tb-historial"   onclick="showTab('historial',this)">📊 Historial</button>
   <button class="tab-btn"        id="tb-admin"       onclick="showTab('admin',this)">⚙️ Personal</button>
+  <button onclick="descargarBackup()" style="background: #38bdf8; color: black; padding: 10px; border-radius: 5px; cursor: pointer;">💾 Descargar Backup</button>
   <button class="logout-btn" onclick="doLogout()">🚪 Salir</button>
 </header>
 
@@ -583,9 +582,11 @@ let S={
   activeSedes: JSON.parse(localStorage.getItem('gf_activeSedes')||'null') || ['VERPASAR','HUARAL','SERVICENTRO'],
   turno:'MAÑANA', soloMode:false, editId:null
 };
-function persist() {
-  // Guarda tus datos en la nube de Firebase
-  database.ref('/').set(S);
+function persist(){
+  localStorage.setItem('gf_names',       JSON.stringify(S.names));
+  localStorage.setItem('gf_turnos',      JSON.stringify(S.turnos));
+  localStorage.setItem('gf_allSedes',    JSON.stringify(S.allSedes));
+  localStorage.setItem('gf_activeSedes', JSON.stringify(S.activeSedes));
 }
 
 // ═══════════════════════════════════════════
@@ -1133,61 +1134,19 @@ function toast(msg,err,type){
   el.className='toast show'+(err?' error':type==='warn'?' warn':'');
   setTimeout(()=>el.classList.remove('show'),3500);
 }
-// Leer los datos de Firebase en tiempo real
-database.ref('/').on('value', (snapshot) => {
-  const datosNube = snapshot.val();
+function descargarBackup() {
+  // Convierte tu variable principal 'S' a texto JSON
+  const dataStr = JSON.stringify(S); 
+  const blob = new Blob([dataStr], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
   
-  if (datosNube) {
-    S = datosNube; // Actualiza tu variable S con lo que hay en la nube
-  }
-  
-  // Refresca la pantalla (Ajusta los nombres si tus funciones se llaman diferente)
-  renderNamesGrid();
-  updatePersonal();
-  // Si tienes otras funciones que cargan la tabla, ponlas aquí.
-});
-// ═══════════════════════════════════════════
-//  FIREBASE - CONFIGURACIÓN Y SINCRONIZACIÓN
-// ═══════════════════════════════════════════
-
-// 1. LAS LLAVES VAN PRIMERO
-const firebaseConfig = {
-  apiKey: "AIzaSyAoE4btWUOQCpCJ0_XU3NJlbET7yj1a3Z0",
-  authDomain: "grifo-cuentas.firebaseapp.com",
-  databaseURL: "https://grifo-cuentas-default-rtdb.firebaseio.com",
-  projectId: "grifo-cuentas",
-  storageBucket: "grifo-cuentas.firebasestorage.app",
-  messagingSenderId: "808530939788",
-  appId: "1:808530939788:web:82f7beab150d0b1b7a50a9"
-};
-
-// 2. INICIAMOS LA CONEXIÓN
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = "backup_grifo_datos.json"; // Nombre del archivo
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
-const database = firebase.database();
-
-// 3. REEMPLAZAMOS EL GUARDADO (PERSIST) A LA NUBE
-// (Esto sobreescribe tu guardado local antiguo)
-window.persist = function() {
-  database.ref('/').set(S).then(() => {
-    console.log("Sincronizado con la nube ☁️");
-  }).catch(err => console.error("Error al guardar:", err));
-};
-
-// 4. LEEMOS LA NUBE EN TIEMPO REAL
-database.ref('/').on('value', (snapshot) => {
-  const datosNube = snapshot.val();
-  
-  if (datosNube) {
-    S = datosNube; // Actualizamos los datos
-  }
-  
-  // Dibujamos de nuevo la pantalla
-  if (typeof renderNamesGrid === 'function') renderNamesGrid();
-  if (typeof updatePersonal === 'function') updatePersonal();
-  if (typeof renderAll === 'function') renderAll();
-});
 </script>
 </body>
 </html>
