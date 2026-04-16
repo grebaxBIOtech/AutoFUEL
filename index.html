@@ -20,18 +20,27 @@
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-height:100vh;}
 
+/* ══ LOADING OVERLAY ══ */
+#loading-overlay{
+  position:fixed;inset:0;background:var(--bg);z-index:10000;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+}
+.spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);
+  border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-family:'Rajdhani',sans-serif;font-size:1rem;letter-spacing:2px;
+  text-transform:uppercase;color:var(--text2);}
+
 /* ══ LOGIN SCREEN ══ */
 #login-screen{
   position:fixed;inset:0;background:var(--bg);z-index:9999;
-  display:flex;align-items:center;justify-content:center;
+  display:none;align-items:center;justify-content:center;
   background-image:radial-gradient(ellipse at 20% 50%,rgba(249,115,22,.06) 0%,transparent 60%),
                    radial-gradient(ellipse at 80% 20%,rgba(56,189,248,.05) 0%,transparent 50%);
 }
-.login-box{
-  background:var(--surface);border:1px solid var(--border);border-radius:20px;
-  padding:48px 40px;width:100%;max-width:420px;text-align:center;
-  box-shadow:0 24px 80px rgba(0,0,0,.5);
-}
+.login-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:48px 40px;width:100%;max-width:440px;text-align:center;
+  box-shadow:0 24px 80px rgba(0,0,0,.5);}
 .login-logo{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:2.2rem;
   color:var(--accent);letter-spacing:3px;text-transform:uppercase;margin-bottom:6px;}
 .login-logo span{color:var(--text2);font-weight:400;}
@@ -39,34 +48,38 @@ body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-h
 .login-label{display:block;font-size:.75rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;
   color:var(--text2);margin-bottom:8px;text-align:left;}
 .login-input-wrap{position:relative;margin-bottom:20px;}
-.login-input{
-  width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+.login-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;
   color:var(--text);padding:13px 46px 13px 16px;font-family:'DM Mono',monospace;font-size:1rem;
-  outline:none;transition:border-color .2s,box-shadow .2s;letter-spacing:.5px;
-}
+  outline:none;transition:border-color .2s,box-shadow .2s;letter-spacing:.5px;}
 .login-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim);}
 .login-input.error{border-color:var(--red);box-shadow:0 0 0 3px var(--red-dim);animation:shake .3s ease;}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 .eye-btn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;
   cursor:pointer;color:var(--text3);font-size:1.1rem;transition:color .2s;padding:4px;}
 .eye-btn:hover{color:var(--text2);}
-.login-btn{
-  width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),#ea580c);
-  border:none;border-radius:10px;color:white;font-family:'Exo 2',sans-serif;
-  font-size:1rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;
-  cursor:pointer;transition:all .2s;box-shadow:0 4px 20px rgba(249,115,22,.3);
-}
+.login-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),#ea580c);
+  border:none;border-radius:10px;color:white;font-family:'Exo 2',sans-serif;font-size:1rem;
+  font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;
+  transition:all .2s;box-shadow:0 4px 20px rgba(249,115,22,.3);}
 .login-btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(249,115,22,.4);}
 .login-error{color:var(--red);font-size:.82rem;margin-top:12px;min-height:20px;font-weight:600;}
 .login-hint{color:var(--text3);font-size:.76rem;margin-top:20px;line-height:1.6;}
 
-/* ══ READ-ONLY BANNER ══ */
-#readonly-banner{
-  background:var(--teal-dim);border-bottom:1px solid rgba(45,212,191,.3);
-  padding:8px 24px;display:flex;align-items:center;gap:10px;
-  font-size:.82rem;color:var(--teal);font-weight:600;letter-spacing:.3px;
+/* ══ SYNC STATUS ══ */
+#sync-bar{
+  background:var(--surface2);border-bottom:1px solid var(--border);
+  padding:5px 24px;display:flex;align-items:center;gap:8px;font-size:.75rem;color:var(--text3);
 }
-#readonly-banner .ro-icon{font-size:1rem;}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:all .4s;}
+.sync-dot.ok{background:var(--green);}
+.sync-dot.saving{background:var(--yellow);animation:pulse .6s infinite;}
+.sync-dot.err{background:var(--red);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ══ READ-ONLY BANNER ══ */
+#readonly-banner{background:var(--teal-dim);border-bottom:1px solid rgba(45,212,191,.3);
+  padding:8px 24px;display:flex;align-items:center;gap:10px;
+  font-size:.82rem;color:var(--teal);font-weight:600;letter-spacing:.3px;}
 
 /* ══ HEADER ══ */
 .app-header{background:linear-gradient(135deg,#0d1117,#1a1f2e);border-bottom:1px solid var(--border);
@@ -160,15 +173,27 @@ select option{background:var(--surface2);}
 .enc-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;}
 .enc-title{font-size:.74rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:12px;font-weight:600;}
 .desc-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;align-items:end;}
-/* solo cuadre — single amount */
 .solo-cuadre{background:var(--purple-dim);border:1px solid rgba(167,139,250,.3);border-radius:10px;padding:20px;}
 .solo-cuadre-title{font-size:.74rem;text-transform:uppercase;letter-spacing:.8px;color:var(--purple);margin-bottom:16px;font-weight:600;}
 .solo-cuadre-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;align-items:end;}
-/* edit banner */
 .edit-banner{background:var(--yellow-dim);border:1px solid rgba(250,204,21,.4);border-radius:10px;
   padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:0;}
 .edit-banner-text{font-size:.82rem;color:var(--yellow);font-weight:600;flex:1;}
-/* DESCUENTOS */
+
+/* ══ IMPORT PANEL ══ */
+.import-panel{background:var(--blue-dim);border:1px solid rgba(56,189,248,.3);border-radius:12px;
+  padding:20px;margin-bottom:0;}
+.import-title{font-size:.8rem;color:var(--blue);font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;}
+.import-textarea{width:100%;height:90px;background:var(--surface3);border:1px solid var(--border);
+  border-radius:8px;color:var(--text);padding:10px 12px;font-family:'DM Mono',monospace;font-size:.78rem;
+  outline:none;resize:vertical;transition:border-color .2s;}
+.import-textarea:focus{border-color:var(--blue);}
+.btn-import{padding:10px 18px;background:linear-gradient(135deg,var(--blue),#0284c7);
+  border:none;border-radius:8px;color:white;font-family:'Exo 2',sans-serif;font-weight:700;
+  font-size:.85rem;cursor:pointer;transition:all .2s;letter-spacing:.5px;}
+.btn-import:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(56,189,248,.3);}
+
+/* ══ DESCUENTOS ══ */
 .desc-tab-layout{max-width:1400px;margin:0 auto;padding:24px;}
 .workers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
 .worker-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden;}
@@ -184,7 +209,8 @@ select option{background:var(--surface2);}
 .balance-total.pos{background:var(--green-dim);color:var(--green);}
 .balance-total.neg{background:var(--red-dim);color:var(--red);}
 .balance-total.zero{background:var(--surface2);color:var(--text2);}
-/* HISTORIAL */
+
+/* ══ HISTORIAL ══ */
 .hist-layout{max-width:1600px;margin:0 auto;padding:24px;}
 .hist-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:auto;}
 table{width:100%;border-collapse:collapse;}
@@ -207,20 +233,17 @@ tr:last-child td{border-bottom:none;}
 .mdet-row{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:.78rem;margin-bottom:3px;}
 .mdet-row .k{color:var(--text3);}.mdet-row .v{color:var(--text);}
 .mdet-row .diff{color:var(--green);}.mdet-row .diff.neg{color:var(--red);}
-.expand-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--text2);
-  cursor:pointer;font-size:.72rem;padding:3px 9px;transition:all .2s;font-family:'Exo 2',sans-serif;font-weight:600;}
+.expand-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--text2);cursor:pointer;font-size:.72rem;padding:3px 9px;transition:all .2s;font-family:'Exo 2',sans-serif;font-weight:600;}
 .expand-btn:hover{border-color:var(--accent);color:var(--accent);}
-.edit-row-btn{background:none;border:1px solid rgba(250,204,21,.4);border-radius:6px;color:var(--yellow);
-  cursor:pointer;font-size:.72rem;padding:3px 9px;transition:all .2s;font-family:'Exo 2',sans-serif;font-weight:600;margin-left:6px;}
+.edit-row-btn{background:none;border:1px solid rgba(250,204,21,.4);border-radius:6px;color:var(--yellow);cursor:pointer;font-size:.72rem;padding:3px 9px;transition:all .2s;font-family:'Exo 2',sans-serif;font-weight:600;margin-left:6px;}
 .edit-row-btn:hover{background:var(--yellow-dim);}
-.del-row-btn{background:none;border:1px solid rgba(248,113,113,.3);border-radius:6px;color:var(--red);
-  cursor:pointer;font-size:.72rem;padding:3px 9px;transition:all .2s;font-family:'Exo 2',sans-serif;font-weight:600;margin-left:4px;}
+.del-row-btn{background:none;border:1px solid rgba(248,113,113,.3);border-radius:6px;color:var(--red);cursor:pointer;font-size:.72rem;padding:3px 9px;transition:all .2s;font-family:'Exo 2',sans-serif;font-weight:600;margin-left:4px;}
 .del-row-btn:hover{background:var(--red-dim);}
-/* ADMIN */
+
+/* ══ ADMIN ══ */
 .admin-layout{max-width:960px;margin:0 auto;padding:24px;}
 .sedes-list{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
-.sede-chip{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);
-  border-radius:8px;padding:8px 14px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.9rem;letter-spacing:1px;text-transform:uppercase;}
+.sede-chip{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.9rem;letter-spacing:1px;text-transform:uppercase;}
 .sede-chip.active{border-color:var(--accent);background:var(--accent-dim);color:var(--accent);}
 .sede-chip-toggle{background:none;border:none;cursor:pointer;font-size:.85rem;padding:2px 7px;border-radius:4px;transition:all .2s;line-height:1;}
 .sede-chip.active .sede-chip-toggle{color:var(--red);}
@@ -229,18 +252,14 @@ tr:last-child td{border-bottom:none;}
 .sede-chip:not(.active) .sede-chip-toggle:hover{background:var(--green-dim);}
 .names-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;}
 .name-list{list-style:none;margin-top:12px;display:flex;flex-direction:column;gap:6px;}
-.name-item{display:flex;align-items:center;justify-content:space-between;background:var(--surface2);
-  border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:.85rem;}
+.name-item{display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:.85rem;}
 .btn-remove{background:none;border:none;color:var(--text3);cursor:pointer;font-size:1rem;padding:2px 6px;border-radius:4px;transition:all .2s;}
 .btn-remove:hover{color:var(--red);background:var(--red-dim);}
 .add-name-row{display:flex;gap:8px;margin-top:10px;}
-.btn-add{padding:10px 14px;background:var(--accent);border:none;border-radius:8px;color:white;
-  font-family:'Exo 2',sans-serif;font-weight:700;font-size:.85rem;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.btn-add{padding:10px 14px;background:var(--accent);border:none;border-radius:8px;color:white;font-family:'Exo 2',sans-serif;font-weight:700;font-size:.85rem;cursor:pointer;transition:all .2s;white-space:nowrap;}
 .btn-add:hover{background:var(--accent2);}
 /* TOAST */
-.toast{position:fixed;bottom:24px;right:24px;background:var(--surface3);border:1px solid var(--green);
-  border-radius:10px;padding:14px 20px;font-size:.9rem;color:var(--green);
-  transform:translateY(80px);opacity:0;transition:all .3s;z-index:9998;font-family:'Exo 2',sans-serif;font-weight:600;}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface3);border:1px solid var(--green);border-radius:10px;padding:14px 20px;font-size:.9rem;color:var(--green);transform:translateY(80px);opacity:0;transition:all .3s;z-index:9998;font-family:'Exo 2',sans-serif;font-weight:600;}
 .toast.show{transform:translateY(0);opacity:1;}
 .toast.error{border-color:var(--red);color:var(--red);}
 .toast.warn{border-color:var(--yellow);color:var(--yellow);}
@@ -249,13 +268,18 @@ tr:last-child td{border-bottom:none;}
   .totals-row{grid-template-columns:1fr 1fr;}
   .enc-grid{grid-template-columns:1fr;}
   .solo-cuadre-grid{grid-template-columns:1fr 1fr;}
-  .login-box{padding:36px 24px;}
 }
 </style>
 </head>
 <body>
 
-<!-- ══ LOGIN SCREEN ══ -->
+<!-- LOADING OVERLAY -->
+<div id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Conectando con Firebase…</div>
+</div>
+
+<!-- LOGIN SCREEN -->
 <div id="login-screen">
   <div class="login-box">
     <div class="login-logo">Grifo <span>Control</span></div>
@@ -264,334 +288,479 @@ tr:last-child td{border-bottom:none;}
     <div class="login-input-wrap">
       <input type="password" id="pw-input" class="login-input" placeholder="••••••••••••"
         onkeydown="if(event.key==='Enter')tryLogin()">
-      <button class="eye-btn" onclick="togglePwVis()" id="eye-btn" title="Mostrar/ocultar">👁</button>
+      <button class="eye-btn" onclick="togglePwVis()" title="Mostrar/ocultar">👁</button>
     </div>
     <button class="login-btn" onclick="tryLogin()">🔓 Ingresar</button>
     <div class="login-error" id="login-error"></div>
-    <div class="login-hint">Ingresa tu contraseña para acceder al sistema.<br>Modo lectura: acceso a historial y descuentos.</div>
+    <div class="login-hint">Acceso completo o modo lectura según tu contraseña.</div>
   </div>
 </div>
 
-<!-- ══ APP WRAPPER (hidden until login) ══ -->
+<!-- APP WRAPPER -->
 <div id="app-wrapper" style="display:none">
 
-<!-- Read-only banner -->
-<div id="readonly-banner" style="display:none">
-  <span class="ro-icon">🔒</span>
-  <span>Modo Lectura — solo puedes consultar el historial y los descuentos. Para editar inicia sesión como administrador.</span>
-  <span style="margin-left:auto;cursor:pointer;opacity:.7" onclick="doLogout()">Cerrar sesión ✕</span>
-</div>
+  <!-- Sync status bar -->
+  <div id="sync-bar">
+    <div class="sync-dot" id="sync-dot"></div>
+    <span id="sync-text">Conectando…</span>
+  </div>
 
-<header class="app-header">
-  <div class="app-logo">Grifo <span>Control</span></div>
-  <button class="tab-btn active" id="tb-turno"      onclick="showTab('turno',this)">📋 Turno</button>
-  <button class="tab-btn"        id="tb-descuentos"  onclick="showTab('descuentos',this)">💰 Descuentos</button>
-  <button class="tab-btn"        id="tb-historial"   onclick="showTab('historial',this)">📊 Historial</button>
-  <button class="tab-btn"        id="tb-admin"       onclick="showTab('admin',this)">⚙️ Personal</button>
-  <button class="logout-btn" onclick="doLogout()">🚪 Salir</button>
-</header>
+  <!-- Read-only banner -->
+  <div id="readonly-banner" style="display:none">
+    <span>🔒</span>
+    <span>Modo Lectura — solo puedes consultar el historial y los descuentos.</span>
+    <span style="margin-left:auto;cursor:pointer;opacity:.7" onclick="doLogout()">Cerrar sesión ✕</span>
+  </div>
 
-<!-- TURNO TAB -->
-<div id="tab-turno" class="tab-content active">
-<div class="turno-layout">
-  <div class="sidebar">
-    <div class="edit-banner" id="edit-banner" style="display:none">
-      <span class="edit-banner-text">✏️ Editando turno guardado<br><span id="edit-banner-info" style="font-weight:400;font-size:.75rem;color:var(--text2)"></span></span>
-      <button onclick="cancelEdit()" style="padding:6px 12px;border:1px solid rgba(250,204,21,.4);border-radius:6px;background:none;color:var(--yellow);cursor:pointer;font-size:.78rem;font-weight:700;font-family:'Exo 2',sans-serif;">✕ Cancelar</button>
-    </div>
-    <div class="card">
-      <div class="card-title">Configuración</div>
-      <div class="form-group">
-        <label class="form-label">Sede</label>
-        <select id="sede" onchange="onSedeChange()"></select>
+  <header class="app-header">
+    <div class="app-logo">Grifo <span>Control</span></div>
+    <button class="tab-btn active" id="tb-turno"     onclick="showTab('turno',this)">📋 Turno</button>
+    <button class="tab-btn"        id="tb-descuentos" onclick="showTab('descuentos',this)">💰 Descuentos</button>
+    <button class="tab-btn"        id="tb-historial"  onclick="showTab('historial',this)">📊 Historial</button>
+    <button class="tab-btn"        id="tb-admin"      onclick="showTab('admin',this)">⚙️ Personal</button>
+    <button class="logout-btn" onclick="doLogout()">🚪 Salir</button>
+  </header>
+
+  <!-- TURNO TAB -->
+  <div id="tab-turno" class="tab-content active">
+  <div class="turno-layout">
+    <div class="sidebar">
+      <div class="edit-banner" id="edit-banner" style="display:none">
+        <span class="edit-banner-text">✏️ Editando turno guardado<br><span id="edit-banner-info" style="font-weight:400;font-size:.75rem;color:var(--text2)"></span></span>
+        <button onclick="cancelEdit()" style="padding:6px 12px;border:1px solid rgba(250,204,21,.4);border-radius:6px;background:none;color:var(--yellow);cursor:pointer;font-size:.78rem;font-weight:700;font-family:'Exo 2',sans-serif;">✕ Cancelar</button>
       </div>
-      <div class="form-group">
-        <label class="form-label">Fecha</label>
-        <input type="date" id="fecha">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Turno</label>
-        <div class="turno-toggle">
-          <button class="turno-btn active" id="btn-mañana" onclick="setTurno('MAÑANA')">🌅 Mañana</button>
-          <button class="turno-btn"        id="btn-tarde"  onclick="setTurno('TARDE')">🌆 Tarde</button>
-        </div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">Encargados</div>
-      <div class="solo-toggle" id="solo-toggle-box" onclick="toggleSolo(event)">
-        <input type="checkbox" class="solo-chk" id="solo-check">
-        <span class="solo-lbl">☝️ Un solo encargado<br><span style="font-weight:400;color:var(--text3);font-size:.72rem">GLP + Líquido juntos</span></span>
-      </div>
-      <div class="solo-section" id="solo-section">
-        <label class="form-label">Encargado único (GLP + Líquido)</label>
-        <select id="enc-solo" onchange="updateLabels()"><option value="">— Seleccionar —</option></select>
-      </div>
-      <div id="enc-sep">
+      <div class="card">
+        <div class="card-title">Configuración</div>
         <div class="form-group">
-          <label class="form-label">Encargado GLP</label>
-          <select id="enc-glp" onchange="updateLabels()"><option value="">— Seleccionar —</option></select>
+          <label class="form-label">Sede</label>
+          <select id="sede" onchange="onSedeChange()"></select>
         </div>
-        <div class="form-group" style="margin-bottom:0">
-          <label class="form-label">Encargado Líquido</label>
-          <select id="enc-liq" onchange="updateLabels()"><option value="">— Seleccionar —</option></select>
+        <div class="form-group">
+          <label class="form-label">Fecha</label>
+          <input type="date" id="fecha">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Turno</label>
+          <div class="turno-toggle">
+            <button class="turno-btn active" id="btn-mañana" onclick="setTurno('MAÑANA')">🌅 Mañana</button>
+            <button class="turno-btn"        id="btn-tarde"  onclick="setTurno('TARDE')">🌆 Tarde</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Encargados</div>
+        <div class="solo-toggle" id="solo-toggle-box" onclick="toggleSolo(event)">
+          <input type="checkbox" class="solo-chk" id="solo-check">
+          <span class="solo-lbl">☝️ Un solo encargado<br><span style="font-weight:400;color:var(--text3);font-size:.72rem">GLP + Líquido juntos</span></span>
+        </div>
+        <div class="solo-section" id="solo-section">
+          <label class="form-label">Encargado único</label>
+          <select id="enc-solo" onchange="updateLabels()"><option value="">— Seleccionar —</option></select>
+        </div>
+        <div id="enc-sep">
+          <div class="form-group">
+            <label class="form-label">Encargado GLP</label>
+            <select id="enc-glp" onchange="updateLabels()"><option value="">— Seleccionar —</option></select>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Encargado Líquido</label>
+            <select id="enc-liq" onchange="updateLabels()"><option value="">— Seleccionar —</option></select>
+          </div>
+        </div>
+      </div>
+      <button class="btn-save" id="btn-guardar" onclick="guardarTurno()">💾 Guardar Turno</button>
+    </div>
+
+    <div class="main-area">
+      <div class="card">
+        <div class="machines-header">
+          <div class="section-title">⛽ Máquinas Líquido <span style="color:var(--text3);font-size:.82rem;font-weight:400">(12)</span></div>
+          <div id="total-liq-badge" class="badge">Total: 0.00</div>
+        </div>
+        <div class="machines-grid" id="liq-grid"></div>
+      </div>
+      <div class="card">
+        <div class="machines-header">
+          <div class="section-title">🔵 Máquinas GLP <span style="color:var(--text3);font-size:.82rem;font-weight:400">(2)</span></div>
+          <div id="total-glp-badge" class="badge">Total: 0.00</div>
+        </div>
+        <div class="machines-grid" id="glp-grid"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Resumen del Turno</div>
+        <div class="totals-row">
+          <div class="total-box"><div class="total-label">Total Líquido</div><div class="total-value" id="sum-liq">S/ 0.00</div></div>
+          <div class="total-box"><div class="total-label">Total GLP</div><div class="total-value" id="sum-glp">S/ 0.00</div></div>
+          <div class="total-box"><div class="total-label">Total Turno</div><div class="total-value highlight" id="sum-total">S/ 0.00</div></div>
+        </div>
+      </div>
+      <!-- Cuadre separado -->
+      <div id="cuadre-sep" class="card">
+        <div class="card-title">Cuadre de Caja</div>
+        <div class="enc-grid">
+          <div class="enc-card">
+            <div class="enc-title">💧 Líquido — <span id="lbl-liq" style="color:var(--blue)">—</span></div>
+            <div class="desc-row">
+              <div><div class="mini-label">Total calculado</div><div class="desc-result" id="calc-liq">S/ 0.00</div></div>
+              <div><div class="mini-label">Entregó</div><input type="number" id="ent-liq" placeholder="0.00" step="0.01" oninput="calcDesc()"></div>
+              <div><div class="mini-label">Diferencia</div><div class="desc-result" id="diff-liq">—</div></div>
+            </div>
+          </div>
+          <div class="enc-card">
+            <div class="enc-title">🔵 GLP — <span id="lbl-glp" style="color:var(--blue)">—</span></div>
+            <div class="desc-row">
+              <div><div class="mini-label">Total calculado</div><div class="desc-result" id="calc-glp">S/ 0.00</div></div>
+              <div><div class="mini-label">Entregó</div><input type="number" id="ent-glp" placeholder="0.00" step="0.01" oninput="calcDesc()"></div>
+              <div><div class="mini-label">Diferencia</div><div class="desc-result" id="diff-glp">—</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Cuadre único -->
+      <div id="cuadre-solo" class="card" style="display:none">
+        <div class="card-title">Cuadre de Caja — Encargado Único</div>
+        <div class="solo-cuadre">
+          <div class="solo-cuadre-title">☝️ <span id="lbl-solo" style="color:var(--purple)">—</span> — GLP + Líquido</div>
+          <div class="solo-cuadre-grid">
+            <div><div class="mini-label">Total Líquido</div><div class="desc-result" id="solo-calc-liq">S/ 0.00</div></div>
+            <div><div class="mini-label">Total GLP</div><div class="desc-result" id="solo-calc-glp">S/ 0.00</div></div>
+            <div><div class="mini-label">Total a cobrar</div><div class="desc-result" id="solo-calc-total" style="color:var(--accent);font-weight:600">S/ 0.00</div></div>
+            <div><div class="mini-label">Monto entregado</div><input type="number" id="solo-ent-total" placeholder="0.00" step="0.01" oninput="calcDescSolo()"></div>
+          </div>
+          <div style="margin-top:14px">
+            <div class="mini-label" style="margin-bottom:8px">Diferencia (entregado − total)</div>
+            <div class="desc-result" id="solo-balance" style="font-size:1.15rem;font-weight:600">—</div>
+          </div>
         </div>
       </div>
     </div>
-    <button class="btn-save" id="btn-guardar" onclick="guardarTurno()">💾 Guardar Turno</button>
+  </div>
   </div>
 
-  <div class="main-area">
+  <!-- DESCUENTOS TAB -->
+  <div id="tab-descuentos" class="tab-content">
+  <div class="desc-tab-layout">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+      <h2 style="font-family:'Rajdhani',sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Balance por Trabajador</h2>
+      <div id="desc-filters" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+    </div>
+    <div class="workers-grid" id="workers-grid">
+      <div class="empty-state"><div class="icon">💰</div><p>Aún no hay turnos guardados</p></div>
+    </div>
+  </div>
+  </div>
+
+  <!-- HISTORIAL TAB -->
+  <div id="tab-historial" class="tab-content">
+  <div class="hist-layout">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+      <h2 style="font-family:'Rajdhani',sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Historial de Turnos</h2>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <select id="hist-filter" onchange="renderHistorial()" style="width:auto;padding:8px 12px;"></select>
+        <button class="btn-filter" onclick="exportarCSV()">⬇️ CSV</button>
+      </div>
+    </div>
+    <p style="font-size:.8rem;color:var(--text3);margin-bottom:12px;" id="hist-hint">💡 Haz clic en cualquier fila para expandir las lecturas. Usa ✏️ para editar o 🗑️ para eliminar.</p>
+    <div class="hist-table-wrap">
+      <table>
+        <thead><tr>
+          <th>Fecha</th><th>Sede</th><th>Turno</th>
+          <th>Enc. GLP</th><th>Enc. Líquido</th>
+          <th>Total Líq.</th><th>Total GLP</th><th>Total</th>
+          <th>Diff/Balance</th><th>Diff GLP</th><th>Modo</th>
+          <th id="hist-actions-th">Acciones</th>
+        </tr></thead>
+        <tbody id="hist-tbody">
+          <tr><td colspan="12" style="text-align:center;color:var(--text3);padding:32px;">Sin registros</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  </div>
+
+  <!-- ADMIN TAB -->
+  <div id="tab-admin" class="tab-content">
+  <div class="admin-layout">
+    <h2 style="font-family:'Rajdhani',sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:24px;">⚙️ Personal y Sedes</h2>
+
+    <!-- IMPORT BACKUP PANEL -->
+    <div class="import-panel" style="margin-bottom:24px;">
+      <div class="import-title">📥 Importar backup desde localStorage</div>
+      <p style="font-size:.78rem;color:var(--text2);margin-bottom:10px;">Pega aquí el JSON que copiaste de la consola del navegador para migrar tus datos a Firebase.</p>
+      <textarea class="import-textarea" id="import-json" placeholder='{"gf_turnos":[...],"gf_names":{...},"gf_allSedes":[...],"gf_activeSedes":["..."]}' spellcheck="false"></textarea>
+      <div style="display:flex;gap:10px;margin-top:10px;align-items:center;">
+        <button class="btn-import" onclick="importFromJSON()">📥 Importar datos</button>
+        <span style="font-size:.75rem;color:var(--text3)">Solo funciona una vez. Los datos existentes en Firebase NO se borran, se fusionan.</span>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px;">
+      <div class="card-title">Sedes</div>
+      <p style="font-size:.82rem;color:var(--text2);margin-bottom:14px;">Activa o desactiva sedes. Mínimo una activa.</p>
+      <div class="sedes-list" id="sedes-list"></div>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:8px;">
+        <input type="text" id="new-sede" placeholder="Nueva sede..." style="width:200px;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')addSede()">
+        <button class="btn-add" onclick="addSede()">+ Agregar</button>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:24px;">
+      <div class="card-title">Personal por Sede</div>
+      <div class="names-grid" id="names-grid"></div>
+    </div>
     <div class="card">
-      <div class="machines-header">
-        <div class="section-title">⛽ Máquinas Líquido <span style="color:var(--text3);font-size:.82rem;font-weight:400">(12)</span></div>
-        <div id="total-liq-badge" class="badge">Total: 0.00</div>
-      </div>
-      <div class="machines-grid" id="liq-grid"></div>
-    </div>
-    <div class="card">
-      <div class="machines-header">
-        <div class="section-title">🔵 Máquinas GLP <span style="color:var(--text3);font-size:.82rem;font-weight:400">(2)</span></div>
-        <div id="total-glp-badge" class="badge">Total: 0.00</div>
-      </div>
-      <div class="machines-grid" id="glp-grid"></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Resumen del Turno</div>
-      <div class="totals-row">
-        <div class="total-box"><div class="total-label">Total Líquido</div><div class="total-value" id="sum-liq">S/ 0.00</div></div>
-        <div class="total-box"><div class="total-label">Total GLP</div><div class="total-value" id="sum-glp">S/ 0.00</div></div>
-        <div class="total-box"><div class="total-label">Total Turno</div><div class="total-value highlight" id="sum-total">S/ 0.00</div></div>
-      </div>
-    </div>
-
-    <!-- Cuadre separado (2 encargados) -->
-    <div id="cuadre-sep" class="card">
-      <div class="card-title">Cuadre de Caja</div>
-      <div class="enc-grid">
-        <div class="enc-card">
-          <div class="enc-title">💧 Líquido — <span id="lbl-liq" style="color:var(--blue)">—</span></div>
-          <div class="desc-row">
-            <div><div class="mini-label">Total calculado</div><div class="desc-result" id="calc-liq">S/ 0.00</div></div>
-            <div><div class="mini-label">Entregó</div><input type="number" id="ent-liq" placeholder="0.00" step="0.01" oninput="calcDesc()"></div>
-            <div><div class="mini-label">Diferencia</div><div class="desc-result" id="diff-liq">—</div></div>
-          </div>
-        </div>
-        <div class="enc-card">
-          <div class="enc-title">🔵 GLP — <span id="lbl-glp" style="color:var(--blue)">—</span></div>
-          <div class="desc-row">
-            <div><div class="mini-label">Total calculado</div><div class="desc-result" id="calc-glp">S/ 0.00</div></div>
-            <div><div class="mini-label">Entregó</div><input type="number" id="ent-glp" placeholder="0.00" step="0.01" oninput="calcDesc()"></div>
-            <div><div class="mini-label">Diferencia</div><div class="desc-result" id="diff-glp">—</div></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Cuadre encargado único — UN SOLO MONTO -->
-    <div id="cuadre-solo" class="card" style="display:none">
-      <div class="card-title">Cuadre de Caja — Encargado Único</div>
-      <div class="solo-cuadre">
-        <div class="solo-cuadre-title">☝️ <span id="lbl-solo" style="color:var(--purple)">—</span> — responsable de GLP + Líquido</div>
-        <div class="solo-cuadre-grid">
-          <div>
-            <div class="mini-label">Total Líquido</div>
-            <div class="desc-result" id="solo-calc-liq">S/ 0.00</div>
-          </div>
-          <div>
-            <div class="mini-label">Total GLP</div>
-            <div class="desc-result" id="solo-calc-glp">S/ 0.00</div>
-          </div>
-          <div>
-            <div class="mini-label">Total a cobrar (LIQ + GLP)</div>
-            <div class="desc-result" id="solo-calc-total" style="color:var(--accent);font-weight:600">S/ 0.00</div>
-          </div>
-          <div>
-            <div class="mini-label">Monto entregado</div>
-            <input type="number" id="solo-ent-total" placeholder="0.00" step="0.01" oninput="calcDescSolo()">
-          </div>
-        </div>
-        <div style="margin-top:14px">
-          <div class="mini-label" style="margin-bottom:8px">Diferencia (entregado − total)</div>
-          <div class="desc-result" id="solo-balance" style="font-size:1.15rem;font-weight:600">—</div>
-        </div>
-      </div>
+      <div class="card-title">Zona de Peligro</div>
+      <p style="color:var(--text2);font-size:.85rem;margin-bottom:12px;">Elimina todos los turnos. No se puede deshacer.</p>
+      <button onclick="clearAll()" style="padding:10px 20px;background:var(--red-dim);border:1px solid var(--red);border-radius:8px;color:var(--red);cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">🗑️ Limpiar todos los datos</button>
     </div>
   </div>
-</div>
-</div>
-
-<!-- DESCUENTOS TAB -->
-<div id="tab-descuentos" class="tab-content">
-<div class="desc-tab-layout">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
-    <h2 style="font-family:'Rajdhani',sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Balance por Trabajador</h2>
-    <div id="desc-filters" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
   </div>
-  <div class="workers-grid" id="workers-grid">
-    <div class="empty-state"><div class="icon">💰</div><p>Aún no hay turnos guardados</p></div>
-  </div>
-</div>
-</div>
-
-<!-- HISTORIAL TAB -->
-<div id="tab-historial" class="tab-content">
-<div class="hist-layout">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
-    <h2 style="font-family:'Rajdhani',sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Historial de Turnos</h2>
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-      <select id="hist-filter" onchange="renderHistorial()" style="width:auto;padding:8px 12px;"></select>
-      <button class="btn-filter" onclick="exportarCSV()">⬇️ CSV</button>
-    </div>
-  </div>
-  <p style="font-size:.8rem;color:var(--text3);margin-bottom:12px;" id="hist-hint">💡 Haz clic en cualquier fila para expandir las lecturas. Usa ✏️ para editar ese turno o 🗑️ para eliminarlo.</p>
-  <div class="hist-table-wrap">
-    <table>
-      <thead><tr>
-        <th>Fecha</th><th>Sede</th><th>Turno</th>
-        <th>Enc. GLP</th><th>Enc. Líquido</th>
-        <th>Total Líq.</th><th>Total GLP</th><th>Total</th>
-        <th>Diff Líq./Total</th><th>Diff GLP</th><th>Modo</th>
-        <th id="hist-actions-th">Acciones</th>
-      </tr></thead>
-      <tbody id="hist-tbody">
-        <tr><td colspan="12" style="text-align:center;color:var(--text3);padding:32px;">Sin registros</td></tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-</div>
-
-<!-- ADMIN TAB -->
-<div id="tab-admin" class="tab-content">
-<div class="admin-layout">
-  <h2 style="font-family:'Rajdhani',sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:24px;">⚙️ Personal y Sedes</h2>
-  <div class="card" style="margin-bottom:24px;">
-    <div class="card-title">Sedes</div>
-    <p style="font-size:.82rem;color:var(--text2);margin-bottom:14px;">Activa o desactiva sedes. Mínimo una activa.</p>
-    <div class="sedes-list" id="sedes-list"></div>
-    <div style="display:flex;gap:8px;align-items:center;margin-top:8px;">
-      <input type="text" id="new-sede" placeholder="Nueva sede..." style="width:200px;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')addSede()">
-      <button class="btn-add" onclick="addSede()">+ Agregar</button>
-    </div>
-  </div>
-  <div class="card" style="margin-bottom:24px;">
-    <div class="card-title">Personal por Sede</div>
-    <div class="names-grid" id="names-grid"></div>
-  </div>
-  <div class="card">
-    <div class="card-title">Zona de Peligro</div>
-    <p style="color:var(--text2);font-size:.85rem;margin-bottom:12px;">Elimina todos los turnos. No se puede deshacer.</p>
-    <button onclick="clearAll()" style="padding:10px 20px;background:var(--red-dim);border:1px solid var(--red);border-radius:8px;color:var(--red);cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">🗑️ Limpiar todos los datos</button>
-  </div>
-</div>
-</div>
 
 </div><!-- end #app-wrapper -->
-
 <div class="toast" id="toast"></div>
 
-<script>
-// ═══════════════════════════════════════════
-//  AUTH
-// ═══════════════════════════════════════════
+<!-- ═══════════════════════════════════════════════ -->
+<!-- FIREBASE SDK (Realtime Database via CDN)        -->
+<!-- ═══════════════════════════════════════════════ -->
+<script type="module">
+import { initializeApp }                        from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getDatabase, ref, set, get, onValue,
+         remove, update }                       from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+// ─── Firebase config ───────────────────────────────
+const firebaseConfig = {
+  apiKey:            "AIzaSyAoE4btWUOQCpCJ0_XU3NJlbET7yj1a3Z0",
+  authDomain:        "grifo-cuentas.firebaseapp.com",
+  databaseURL:       "https://grifo-cuentas-default-rtdb.firebaseio.com",
+  projectId:         "grifo-cuentas",
+  storageBucket:     "grifo-cuentas.firebasestorage.app",
+  messagingSenderId: "808530939788",
+  appId:             "1:808530939788:web:005cf017a82e33837a50a9"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
+
+// ─── Helpers ───────────────────────────────────────
+function fbRef(path){ return ref(db, path); }
+
+async function fbGet(path){
+  const snap = await get(fbRef(path));
+  return snap.exists() ? snap.val() : null;
+}
+async function fbSet(path, val){ await set(fbRef(path), val); }
+async function fbRemove(path){ await remove(fbRef(path)); }
+
+function setSyncStatus(state, msg){
+  const dot  = document.getElementById('sync-dot');
+  const text = document.getElementById('sync-text');
+  dot.className  = 'sync-dot ' + state;
+  text.textContent = msg;
+}
+
+// ─── Passwords ─────────────────────────────────────
 const PW_ADMIN = 'GGrebaxzm2005';
-const PW_READ  = 'verpasar2024';   // read-only password — change as needed
+const PW_READ  = 'verpasar2024'; // change this to your read-only password
 
-let AUTH = { level: null }; // null | 'admin' | 'readonly'
+// ─── Constants ─────────────────────────────────────
+const LIQ = 12, GLP_M = 2;
+const DEFAULT_NAMES = {
+  VERPASAR:    ['LUZMILA','SOCORRO','ROMARIO','GISELLA','ANGIE'],
+  HUARAL:      ['FABRIZIO','PERCY','ISMAEL','DORA','CINTHIA','PABLO'],
+  SERVICENTRO: ['YADIRA','CARLOS','ELI','ANGELICA']
+};
 
-function tryLogin(){
-  const pw = document.getElementById('pw-input').value;
-  const errEl = document.getElementById('login-error');
-  if(pw === PW_ADMIN){
-    AUTH.level = 'admin';
-    launchApp();
-  } else if(pw === PW_READ){
-    AUTH.level = 'readonly';
-    launchApp();
-  } else {
-    errEl.textContent = '⚠️ Contraseña incorrecta. Inténtalo de nuevo.';
-    const inp = document.getElementById('pw-input');
-    inp.classList.add('error');
-    setTimeout(()=>inp.classList.remove('error'), 400);
-    inp.value = '';
-    inp.focus();
+// ─── App State (loaded from Firebase) ──────────────
+let S = {
+  names:       JSON.parse(JSON.stringify(DEFAULT_NAMES)),
+  turnos:      [],
+  allSedes:    ['VERPASAR','HUARAL','SERVICENTRO'],
+  activeSedes: ['VERPASAR','HUARAL','SERVICENTRO'],
+  turno: 'MAÑANA', soloMode: false, editId: null
+};
+
+// ─── Persist helpers (write specific paths) ────────
+async function persistNames(){
+  try{ await fbSet('config/names', S.names); }
+  catch(e){ console.error(e); }
+}
+async function persistSedes(){
+  try{
+    await fbSet('config/allSedes',    S.allSedes);
+    await fbSet('config/activeSedes', S.activeSedes);
+  }catch(e){ console.error(e); }
+}
+async function persistTurno(t){
+  setSyncStatus('saving','Guardando…');
+  try{
+    await fbSet('turnos/' + t.id, t);
+    setSyncStatus('ok','Sincronizado ✓');
+  }catch(e){
+    setSyncStatus('err','Error al guardar');
+    toast('⚠️ Error guardando en Firebase',true);
+  }
+}
+async function deleteTurnoFB(id){
+  setSyncStatus('saving','Eliminando…');
+  try{
+    await fbRemove('turnos/' + id);
+    setSyncStatus('ok','Sincronizado ✓');
+  }catch(e){ setSyncStatus('err','Error'); }
+}
+
+// ─── Load all data from Firebase ───────────────────
+async function loadFromFirebase(){
+  setSyncStatus('saving','Cargando datos…');
+  try{
+    const [names, allSedes, activeSedes, turnosSnap] = await Promise.all([
+      fbGet('config/names'),
+      fbGet('config/allSedes'),
+      fbGet('config/activeSedes'),
+      fbGet('turnos')
+    ]);
+    if(names)       S.names       = names;
+    if(allSedes)    S.allSedes    = allSedes;
+    if(activeSedes) S.activeSedes = activeSedes;
+    if(turnosSnap){
+      // Firebase object → array
+      S.turnos = Object.values(turnosSnap)
+        .sort((a,b) => (a.fecha||'').localeCompare(b.fecha||'') || (a.id||0)-(b.id||0));
+    }
+    setSyncStatus('ok','Conectado a Firebase ✓');
+  }catch(e){
+    setSyncStatus('err','Sin conexión — usando datos locales');
+    console.error('Firebase load error:', e);
   }
 }
 
-function launchApp(){
+// Live listener: whenever another device changes data, update locally
+function subscribeToChanges(){
+  onValue(fbRef('turnos'), snap => {
+    if(snap.exists()){
+      S.turnos = Object.values(snap.val())
+        .sort((a,b) => (a.fecha||'').localeCompare(b.fecha||'') || (a.id||0)-(b.id||0));
+    } else {
+      S.turnos = [];
+    }
+    // Refresh whichever tab is active
+    const active = document.querySelector('.tab-content.active');
+    if(active){
+      if(active.id==='tab-historial')  renderHistorial();
+      if(active.id==='tab-descuentos') renderDesc('TODAS');
+    }
+    setSyncStatus('ok','Sincronizado ✓');
+  });
+  onValue(fbRef('config'), snap => {
+    if(!snap.exists()) return;
+    const c = snap.val();
+    if(c.names)       S.names       = c.names;
+    if(c.allSedes)    S.allSedes    = c.allSedes;
+    if(c.activeSedes) S.activeSedes = c.activeSedes;
+    buildSedeSelect();
+  });
+}
+
+// ─── IMPORT from localStorage backup ───────────────
+window.importFromJSON = async function(){
+  const raw = document.getElementById('import-json').value.trim();
+  if(!raw){ toast('⚠️ Pega el JSON primero',true); return; }
+  let parsed;
+  try{ parsed = JSON.parse(raw); }
+  catch(e){ toast('⚠️ JSON inválido, revisa el formato',true); return; }
+
+  setSyncStatus('saving','Importando…');
+  try{
+    let imported = 0;
+    // Import turnos (one by one to avoid duplicates)
+    const existing = new Set(S.turnos.map(t => String(t.id)));
+    const turnos = parsed.gf_turnos || parsed.turnos || [];
+    for(const t of turnos){
+      if(!existing.has(String(t.id))){
+        await fbSet('turnos/' + t.id, t);
+        imported++;
+      }
+    }
+    // Import config
+    if(parsed.gf_names || parsed.names)
+      await fbSet('config/names', parsed.gf_names || parsed.names);
+    if(parsed.gf_allSedes || parsed.allSedes)
+      await fbSet('config/allSedes', parsed.gf_allSedes || parsed.allSedes);
+    if(parsed.gf_activeSedes || parsed.activeSedes)
+      await fbSet('config/activeSedes', parsed.gf_activeSedes || parsed.activeSedes);
+
+    setSyncStatus('ok','Importación completada ✓');
+    toast(`✅ ${imported} turnos importados a Firebase`);
+    document.getElementById('import-json').value = '';
+    await loadFromFirebase();
+    buildSedeSelect(); renderNamesGrid(); renderAdminSedes();
+  }catch(e){
+    setSyncStatus('err','Error al importar');
+    toast('⚠️ Error: ' + e.message, true);
+  }
+};
+
+// ─── AUTH ───────────────────────────────────────────
+let AUTH = { level: null };
+
+window.tryLogin = function(){
+  const pw = document.getElementById('pw-input').value;
+  const errEl = document.getElementById('login-error');
+  if(pw === PW_ADMIN)      AUTH.level = 'admin';
+  else if(pw === PW_READ)  AUTH.level = 'readonly';
+  else {
+    errEl.textContent = '⚠️ Contraseña incorrecta.';
+    const inp = document.getElementById('pw-input');
+    inp.classList.add('error');
+    setTimeout(()=>inp.classList.remove('error'), 400);
+    inp.value=''; inp.focus(); return;
+  }
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app-wrapper').style.display  = 'block';
   applyAuthUI();
-  init();
-}
+  initApp();
+};
 
 function applyAuthUI(){
   const ro = AUTH.level === 'readonly';
   document.getElementById('readonly-banner').style.display = ro ? 'flex' : 'none';
-
   if(ro){
-    // Disable/hide tabs not available in read-only
-    document.getElementById('tb-turno').disabled  = true;
-    document.getElementById('tb-admin').disabled  = true;
-    document.getElementById('tb-turno').style.display = 'none';
-    document.getElementById('tb-admin').style.display = 'none';
-    // Start on descuentos
+    document.getElementById('tb-turno').style.display  = 'none';
+    document.getElementById('tb-admin').style.display  = 'none';
+    document.getElementById('hist-actions-th').style.display = 'none';
+    document.getElementById('hist-hint').textContent = '💡 Haz clic en cualquier fila para expandir las lecturas.';
     document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
     document.getElementById('tab-descuentos').classList.add('active');
     document.getElementById('tb-descuentos').classList.add('active');
-    // Hide historial actions column
-    document.getElementById('hist-actions-th').style.display='none';
-    document.getElementById('hist-hint').textContent='💡 Haz clic en cualquier fila para expandir las lecturas de ese turno.';
   }
 }
 
-function doLogout(){
+window.doLogout = function(){
   AUTH.level = null;
-  document.getElementById('app-wrapper').style.display = 'none';
+  document.getElementById('app-wrapper').style.display  = 'none';
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('pw-input').value = '';
   document.getElementById('login-error').textContent = '';
-  // Re-enable tabs for next login
-  ['tb-turno','tb-admin','tb-descuentos','tb-historial'].forEach(id=>{
+  ['tb-turno','tb-admin'].forEach(id=>{
     const el=document.getElementById(id);
-    el.disabled=false; el.style.display='';
+    el.style.display='';
   });
-}
+};
 
-function togglePwVis(){
+window.togglePwVis = function(){
   const inp = document.getElementById('pw-input');
   inp.type = inp.type === 'password' ? 'text' : 'password';
+};
+
+// ─── APP INIT ───────────────────────────────────────
+async function initApp(){
+  await loadFromFirebase();
+  subscribeToChanges();
+  buildSedeSelect();
+  renderMachines();
+  updatePersonal();
 }
 
-// ═══════════════════════════════════════════
-//  CONSTANTS & STATE
-// ═══════════════════════════════════════════
-const LIQ=12, GLP_M=2;
-const DEFAULT_NAMES={
-  VERPASAR:['LUZMILA','SOCORRO','ROMARIO','GISELLA','ANGIE'],
-  HUARAL:['FABRIZIO','PERCY','ISMAEL','DORA','CINTHIA','PABLO'],
-  SERVICENTRO:['YADIRA','CARLOS','ELI','ANGELICA']
-};
-let S={
-  names:       JSON.parse(localStorage.getItem('gf_names')||'null') || JSON.parse(JSON.stringify(DEFAULT_NAMES)),
-  turnos:      JSON.parse(localStorage.getItem('gf_turnos')||'[]'),
-  allSedes:    JSON.parse(localStorage.getItem('gf_allSedes')||'null') || ['VERPASAR','HUARAL','SERVICENTRO'],
-  activeSedes: JSON.parse(localStorage.getItem('gf_activeSedes')||'null') || ['VERPASAR','HUARAL','SERVICENTRO'],
-  turno:'MAÑANA', soloMode:false, editId:null
-};
-function persist(){
-  localStorage.setItem('gf_names',       JSON.stringify(S.names));
-  localStorage.setItem('gf_turnos',      JSON.stringify(S.turnos));
-  localStorage.setItem('gf_allSedes',    JSON.stringify(S.allSedes));
-  localStorage.setItem('gf_activeSedes', JSON.stringify(S.activeSedes));
-}
-
-// ═══════════════════════════════════════════
-//  TABS
-// ═══════════════════════════════════════════
-function showTab(id,btn){
+// ─── TABS ───────────────────────────────────────────
+window.showTab = function(id, btn){
   if(AUTH.level==='readonly' && (id==='turno'||id==='admin')) return;
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
@@ -600,48 +769,35 @@ function showTab(id,btn){
   if(id==='descuentos'){buildDescFilters();renderDesc('TODAS');}
   if(id==='historial'){buildHistFilter();renderHistorial();}
   if(id==='admin'){renderAdminSedes();renderNamesGrid();}
-}
+};
 
-// ═══════════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════════
-document.getElementById('fecha').value=new Date().toISOString().split('T')[0];
-function init(){
-  buildSedeSelect();
-  renderMachines();
-  updatePersonal();
-}
+// ─── SEDE SELECT ────────────────────────────────────
+document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
 
-// ═══════════════════════════════════════════
-//  SEDE SELECT
-// ═══════════════════════════════════════════
 function buildSedeSelect(){
   const sel=document.getElementById('sede');
   const prev=sel.value;
   sel.innerHTML='';
   S.activeSedes.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;sel.appendChild(o);});
-  if(S.activeSedes.includes(prev))sel.value=prev;
+  if(S.activeSedes.includes(prev)) sel.value=prev;
   onSedeChange();
 }
 function onSedeChange(){updatePersonal();updateLabels();}
+window.onSedeChange = onSedeChange;
 
-// ═══════════════════════════════════════════
-//  TURNO BUTTON
-// ═══════════════════════════════════════════
-function setTurno(t){
+// ─── TURNO ──────────────────────────────────────────
+window.setTurno = function(t){
   S.turno=t;
   document.getElementById('btn-mañana').classList.toggle('active',t==='MAÑANA');
   document.getElementById('btn-tarde').classList.toggle('active',t==='TARDE');
-}
+};
 
-// ═══════════════════════════════════════════
-//  SOLO MODE
-// ═══════════════════════════════════════════
-function toggleSolo(e){
-  if(e&&e.target.tagName==='INPUT')return;
+// ─── SOLO MODE ──────────────────────────────────────
+window.toggleSolo = function(e){
+  if(e&&e.target.tagName==='INPUT') return;
   const chk=document.getElementById('solo-check');
   chk.checked=!chk.checked; S.soloMode=chk.checked; _applySoloUI();
-}
+};
 document.getElementById('solo-check').addEventListener('change',function(){S.soloMode=this.checked;_applySoloUI();});
 function _applySoloUI(){
   document.getElementById('solo-toggle-box').classList.toggle('active',S.soloMode);
@@ -653,9 +809,7 @@ function _applySoloUI(){
 }
 function setSoloMode(val){S.soloMode=val;document.getElementById('solo-check').checked=val;_applySoloUI();}
 
-// ═══════════════════════════════════════════
-//  PERSONAL DROPDOWNS
-// ═══════════════════════════════════════════
+// ─── PERSONAL DROPDOWNS ─────────────────────────────
 function updatePersonal(){
   const sede=document.getElementById('sede').value;
   const names=S.names[sede]||[];
@@ -664,7 +818,7 @@ function updatePersonal(){
     const prev=sel.value;
     sel.innerHTML='<option value="">— Seleccionar —</option>';
     names.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o);});
-    if(names.includes(prev))sel.value=prev;
+    if(names.includes(prev)) sel.value=prev;
   });
   updateLabels();
 }
@@ -674,10 +828,9 @@ function updateLabels(){
   document.getElementById('lbl-solo').textContent=document.getElementById('enc-solo').value||'—';
   calcDesc(); calcDescSolo();
 }
+window.updateLabels = updateLabels;
 
-// ═══════════════════════════════════════════
-//  MACHINES
-// ═══════════════════════════════════════════
+// ─── MACHINES ───────────────────────────────────────
 function renderMachines(){buildGrid('liq-grid','liq',LIQ);buildGrid('glp-grid','glp',GLP_M);}
 function buildGrid(gridId,type,count){
   const g=document.getElementById(gridId);g.innerHTML='';
@@ -698,14 +851,14 @@ function buildGrid(gridId,type,count){
     g.appendChild(c);
   }
 }
-function onMachine(type,i){
+window.onMachine = function(type,i){
   const p=parseFloat(document.getElementById(`${type}-p-${i}`)?.value)||0;
   const c=parseFloat(document.getElementById(`${type}-c-${i}`)?.value)||0;
   const d=c-p;
   const el=document.getElementById(`${type}-d-${i}`);
   if(el){el.textContent=(p||c)?fmt(d):'—';el.className='diff-display'+(d<0?' negative':'');}
   updateTotals();
-}
+};
 function getTotal(type,count){
   let t=0;
   for(let i=1;i<=count;i++) t+=(parseFloat(document.getElementById(`${type}-c-${i}`)?.value)||0)-(parseFloat(document.getElementById(`${type}-p-${i}`)?.value)||0);
@@ -726,9 +879,7 @@ function updateTotals(){
   calcDesc(); calcDescSolo();
 }
 
-// ═══════════════════════════════════════════
-//  CUADRE — 2 encargados
-// ═══════════════════════════════════════════
+// ─── CUADRE ─────────────────────────────────────────
 function calcDesc(){
   const lt=getTotal('liq',LIQ),gt=getTotal('glp',GLP_M);
   const el=parseFloat(document.getElementById('ent-liq').value)||0;
@@ -736,23 +887,18 @@ function calcDesc(){
   setDiff('diff-liq', el>0 ? el-lt : null);
   setDiff('diff-glp', eg>0 ? eg-gt : null);
 }
-
-// ═══════════════════════════════════════════
-//  CUADRE — encargado único (1 monto total)
-// ═══════════════════════════════════════════
+window.calcDesc = calcDesc;
 function calcDescSolo(){
-  const lt=getTotal('liq',LIQ), gt=getTotal('glp',GLP_M), tt=lt+gt;
+  const tt=getTotal('liq',LIQ)+getTotal('glp',GLP_M);
   const entrado=parseFloat(document.getElementById('solo-ent-total').value)||0;
   const balEl=document.getElementById('solo-balance');
   if(entrado>0){
     const diff=entrado-tt;
     balEl.textContent=(diff>=0?'+':'')+fmt(diff);
     balEl.className='desc-result '+(diff>0?'positive':diff<0?'negative':'');
-  } else {
-    balEl.textContent='—'; balEl.className='desc-result';
-  }
+  }else{balEl.textContent='—';balEl.className='desc-result';}
 }
-
+window.calcDescSolo = calcDescSolo;
 function setDiff(id,val){
   const el=document.getElementById(id);if(!el)return;
   if(val===null){el.textContent='—';el.className='desc-result';return;}
@@ -760,9 +906,7 @@ function setDiff(id,val){
   el.className='desc-result '+(val>0?'positive':val<0?'negative':'');
 }
 
-// ═══════════════════════════════════════════
-//  COLLECT MACHINES
-// ═══════════════════════════════════════════
+// ─── COLLECT MACHINES ───────────────────────────────
 function collectMachines(){
   const m={liq:[],glp:[]};
   for(let i=1;i<=LIQ;i++) m.liq.push({p:parseFloat(document.getElementById(`liq-p-${i}`)?.value)||0,c:parseFloat(document.getElementById(`liq-c-${i}`)?.value)||0});
@@ -770,26 +914,21 @@ function collectMachines(){
   return m;
 }
 
-// ═══════════════════════════════════════════
-//  GUARDAR / UPDATE
-// ═══════════════════════════════════════════
-function guardarTurno(){
-  if(AUTH.level==='readonly'){toast('🔒 Modo lectura — no puedes guardar turnos',true);return;}
+// ─── GUARDAR / UPDATE ───────────────────────────────
+window.guardarTurno = async function(){
+  if(AUTH.level==='readonly'){toast('🔒 Modo lectura',true);return;}
   const sede=document.getElementById('sede').value;
   const fecha=document.getElementById('fecha').value;
   if(!fecha){toast('⚠️ Selecciona una fecha',true);return;}
   const lt=getTotal('liq',LIQ),gt=getTotal('glp',GLP_M),tt=lt+gt;
-  let encGlp,encLiq,entL,entG,diffL,diffG,soloEnt;
-
+  let encGlp,encLiq,entL,entG,soloEnt,diffL,diffG;
   if(S.soloMode){
     const solo=document.getElementById('enc-solo').value;
     if(!solo){toast('⚠️ Selecciona el encargado único',true);return;}
     encGlp=solo; encLiq=solo;
     soloEnt=parseFloat(document.getElementById('solo-ent-total').value)||0;
-    entL=soloEnt; entG=0;  // store total as entL for compatibility
-    // For solo: single diff = entrado - total
-    diffL = soloEnt>0 ? soloEnt-tt : null;
-    diffG = null; // no separate GLP diff in solo mode
+    entL=soloEnt; entG=0;
+    diffL=soloEnt>0?soloEnt-tt:null; diffG=null;
   } else {
     encGlp=document.getElementById('enc-glp').value;
     encLiq=document.getElementById('enc-liq').value;
@@ -803,16 +942,18 @@ function guardarTurno(){
 
   if(S.editId!==null){
     const idx=S.turnos.findIndex(t=>t.id===S.editId);
-    if(idx>=0){
-      S.turnos[idx]={...S.turnos[idx],sede,fecha,turno:S.turno,encGlp,encLiq,solo:S.soloMode,
-        liqTotal:lt,glpTotal:gt,total:tt,entL,entG,soloEnt,diffL,diffG,machines};
-    }
-    persist(); toast('✅ Turno actualizado'); cancelEdit(); return;
+    const updated={...(idx>=0?S.turnos[idx]:{}),id:S.editId,sede,fecha,turno:S.turno,
+      encGlp,encLiq,solo:S.soloMode,liqTotal:lt,glpTotal:gt,total:tt,
+      entL,entG,soloEnt,diffL,diffG,machines};
+    if(idx>=0) S.turnos[idx]=updated; else S.turnos.push(updated);
+    await persistTurno(updated);
+    toast('✅ Turno actualizado'); cancelEdit(); return;
   }
 
-  S.turnos.push({id:Date.now(),sede,fecha,turno:S.turno,encGlp,encLiq,solo:S.soloMode,
-    liqTotal:lt,glpTotal:gt,total:tt,entL,entG,soloEnt,diffL,diffG,machines});
-  persist();
+  const newRec={id:Date.now(),sede,fecha,turno:S.turno,encGlp,encLiq,
+    solo:S.soloMode,liqTotal:lt,glpTotal:gt,total:tt,entL,entG,soloEnt,diffL,diffG,machines};
+  S.turnos.push(newRec);
+  await persistTurno(newRec);
   toast('✅ Turno guardado — lecturas actuales → anterior');
 
   // Carry forward
@@ -829,13 +970,11 @@ function guardarTurno(){
   ['ent-liq','ent-glp','solo-ent-total'].forEach(id=>document.getElementById(id).value='');
   ['diff-liq','diff-glp','solo-balance'].forEach(id=>{const e=document.getElementById(id);if(e){e.textContent='—';e.className='desc-result';}});
   updateTotals();
-}
+};
 
-// ═══════════════════════════════════════════
-//  EDIT MODE
-// ═══════════════════════════════════════════
-function loadTurnoForEdit(id){
-  if(AUTH.level==='readonly'){toast('🔒 Modo lectura — no puedes editar',true);return;}
+// ─── EDIT MODE ──────────────────────────────────────
+window.loadTurnoForEdit = function(id){
+  if(AUTH.level==='readonly'){toast('🔒 Modo lectura',true);return;}
   const t=S.turnos.find(x=>x.id===id);if(!t)return;
   S.editId=id;
   document.querySelectorAll('.tab-btn').forEach((b,i)=>{b.classList.toggle('active',i===0);});
@@ -848,10 +987,10 @@ function loadTurnoForEdit(id){
   buildSedeSelect();
   document.getElementById('sede').value=t.sede; onSedeChange();
   document.getElementById('fecha').value=t.fecha;
-  setTurno(t.turno);
+  window.setTurno(t.turno);
   setSoloMode(t.solo||false);
   if(t.solo){
-    document.getElementById('enc-solo').value=t.encGlp;
+    document.getElementById('enc-solo').value=t.encGlp||'';
     document.getElementById('solo-ent-total').value=t.soloEnt||t.entL||'';
     calcDescSolo();
   } else {
@@ -864,33 +1003,32 @@ function loadTurnoForEdit(id){
   updateLabels();
   (t.machines.liq||[]).forEach((m,i)=>{
     const p=document.getElementById(`liq-p-${i+1}`);const c=document.getElementById(`liq-c-${i+1}`);
-    if(p)p.value=m.p||'';if(c)c.value=m.c||'';onMachine('liq',i+1);
+    if(p)p.value=m.p||'';if(c)c.value=m.c||'';window.onMachine('liq',i+1);
   });
   (t.machines.glp||[]).forEach((m,i)=>{
     const p=document.getElementById(`glp-p-${i+1}`);const c=document.getElementById(`glp-c-${i+1}`);
-    if(p)p.value=m.p||'';if(c)c.value=m.c||'';onMachine('glp',i+1);
+    if(p)p.value=m.p||'';if(c)c.value=m.c||'';window.onMachine('glp',i+1);
   });
   window.scrollTo({top:0,behavior:'smooth'});
   toast('✏️ Editando turno del '+t.fecha,false,'warn');
-}
-function cancelEdit(){
+};
+window.cancelEdit = function cancelEdit(){
   S.editId=null;
   document.getElementById('edit-banner').style.display='none';
   document.getElementById('btn-guardar').textContent='💾 Guardar Turno';
   document.getElementById('btn-guardar').style.background='linear-gradient(135deg,var(--accent),#ea580c)';
   document.getElementById('btn-guardar').style.boxShadow='0 4px 20px rgba(249,115,22,.3)';
-}
-function deleteTurno(id,e){
+};
+window.deleteTurno = async function(id,e){
   e.stopPropagation();
   if(AUTH.level==='readonly'){toast('🔒 Modo lectura',true);return;}
   if(!confirm('¿Eliminar este turno?'))return;
   S.turnos=S.turnos.filter(t=>t.id!==id);
-  persist();renderHistorial();toast('🗑️ Turno eliminado');
-}
+  await deleteTurnoFB(id);
+  renderHistorial(); toast('🗑️ Turno eliminado');
+};
 
-// ═══════════════════════════════════════════
-//  DESCUENTOS
-// ═══════════════════════════════════════════
+// ─── DESCUENTOS ─────────────────────────────────────
 function buildDescFilters(){
   const div=document.getElementById('desc-filters');
   div.innerHTML='<button class="btn-filter active" onclick="filterD(\'TODAS\',this)">Todas</button>';
@@ -899,10 +1037,10 @@ function buildDescFilters(){
     b.onclick=function(){filterD(s,this);};div.appendChild(b);
   });
 }
-function filterD(sede,btn){
+window.filterD = function(sede,btn){
   document.querySelectorAll('#desc-filters .btn-filter').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');renderDesc(sede);
-}
+};
 function renderDesc(filter){
   const grid=document.getElementById('workers-grid');
   if(!S.turnos.length){grid.innerHTML='<div class="empty-state"><div class="icon">💰</div><p>Aún no hay turnos guardados</p></div>';return;}
@@ -910,8 +1048,7 @@ function renderDesc(filter){
   S.turnos.forEach(t=>{
     if(filter!=='TODAS'&&t.sede!==filter)return;
     if(t.solo){
-      // Solo mode: single diff assigned to the one person
-      const n=t.encGlp; const d=t.diffL;
+      const n=t.encGlp,d=t.diffL;
       if(!n||d===null||d===undefined)return;
       if(!W[n])W[n]={sede:t.sede,faltante:0,sobrante:0,turnos:0};
       W[n].turnos++;
@@ -942,9 +1079,7 @@ function renderDesc(filter){
   });
 }
 
-// ═══════════════════════════════════════════
-//  HISTORIAL
-// ═══════════════════════════════════════════
+// ─── HISTORIAL ──────────────────────────────────────
 function buildHistFilter(){
   const sel=document.getElementById('hist-filter');
   const prev=sel.value;
@@ -966,20 +1101,17 @@ function renderHistorial(){
     if(isEditing)r.classList.add('editing');
     r.id='hr-'+t.id;
     const liqDisp=t.solo?'<span style="color:var(--purple);font-size:.72rem">= GLP</span>':(t.encLiq||'—');
-    // For solo mode: show single diff in diffL column
-    const diffLDisp = t.diffL!==null ? (t.diffL>=0?'+':'')+fmt(t.diffL) : '—';
-    const diffLClass = t.diffL===null?'' : t.diffL>=0?'val-pos':'val-neg';
-    const diffGDisp = t.solo ? '<span style="color:var(--text3);font-size:.72rem">— (único)</span>' :
-      (t.diffG!==null?(t.diffG>=0?'+':'')+fmt(t.diffG):'—');
-    const diffGClass = (!t.solo&&t.diffG!==null)?(t.diffG>=0?'val-pos':'val-neg'):'';
+    const diffLDisp=t.diffL!==null?(t.diffL>=0?'+':'')+fmt(t.diffL):'—';
+    const diffLClass=t.diffL===null?'':t.diffL>=0?'val-pos':'val-neg';
+    const diffGDisp=t.solo?'<span style="color:var(--text3);font-size:.72rem">—</span>':(t.diffG!==null?(t.diffG>=0?'+':'')+fmt(t.diffG):'—');
+    const diffGClass=(!t.solo&&t.diffG!==null)?(t.diffG>=0?'val-pos':'val-neg'):'';
     r.innerHTML=`
       <td style="color:var(--text);font-weight:600">${t.fecha}</td>
       <td>${t.sede}</td>
       <td><span class="turno-tag ${t.turno==='MAÑANA'?'m':'t'}">${t.turno}</span></td>
       <td style="color:var(--text)">${t.encGlp||'—'}</td>
       <td>${liqDisp}</td>
-      <td>${fmt(t.liqTotal)}</td>
-      <td>${fmt(t.glpTotal)}</td>
+      <td>${fmt(t.liqTotal)}</td><td>${fmt(t.glpTotal)}</td>
       <td style="color:var(--accent);font-weight:600">${fmt(t.total)}</td>
       <td class="${diffLClass}">${diffLDisp}</td>
       <td class="${diffGClass}">${diffGDisp}</td>
@@ -987,7 +1119,7 @@ function renderHistorial(){
       <td style="white-space:nowrap" ${ro?'hidden':''}>
         <button class="expand-btn" onclick="toggleExpand(${t.id},event)">${expandedIds.has(t.id)?'▲ Ocultar':'▼ Lecturas'}</button>
         ${!ro?`<button class="edit-row-btn" onclick="loadTurnoForEdit(${t.id});event.stopPropagation()">✏️ Editar</button>
-        <button class="del-row-btn" onclick="deleteTurno(${t.id},event)">🗑️</button>`:''}
+               <button class="del-row-btn" onclick="deleteTurno(${t.id},event)">🗑️</button>`:''}
       </td>`;
     r.onclick=()=>toggleExpand(t.id,null);
     tbody.appendChild(r);
@@ -998,50 +1130,34 @@ function renderHistorial(){
     }
   });
 }
-function toggleExpand(id,e){
+window.toggleExpand = function(id,e){
   if(e)e.stopPropagation();
   if(expandedIds.has(id))expandedIds.delete(id); else expandedIds.add(id);
   renderHistorial();
-}
+};
 function buildDetailHTML(t){
-  let html=`<div style="padding:4px 0">`;
-  html+=`<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;">`;
+  let html=`<div style="padding:4px 0"><div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;">`;
   html+=`<div style="background:var(--blue-dim);border:1px solid rgba(56,189,248,.2);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--blue)">💧 Líquido: <strong>${t.encLiq||'—'}</strong>${t.solo?' (único)':''}</div>`;
   html+=`<div style="background:var(--purple-dim);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--purple)">🔵 GLP: <strong>${t.encGlp||'—'}</strong></div>`;
-  if(t.solo && (t.soloEnt||t.entL)){
-    html+=`<div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--text2)">☝️ Entregó (total): <strong style="color:var(--text);font-family:'DM Mono',monospace">${fmt(t.soloEnt||t.entL)}</strong></div>`;
-  } else {
+  if(t.solo&&(t.soloEnt||t.entL)) html+=`<div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--text2)">☝️ Entregó (total): <strong style="color:var(--text);font-family:'DM Mono',monospace">${fmt(t.soloEnt||t.entL)}</strong></div>`;
+  else{
     if(t.entL>0) html+=`<div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--text2)">💧 Entregó Líq: <strong style="color:var(--text);font-family:'DM Mono',monospace">${fmt(t.entL)}</strong></div>`;
     if(t.entG>0) html+=`<div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--text2)">🔵 Entregó GLP: <strong style="color:var(--text);font-family:'DM Mono',monospace">${fmt(t.entG)}</strong></div>`;
   }
   html+=`</div>`;
   if(t.machines&&t.machines.liq&&t.machines.liq.length){
-    html+=`<div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:8px;font-weight:600">⛽ Lecturas Líquido</div>`;
-    html+=`<div class="machines-detail-grid">`;
-    t.machines.liq.forEach((m,i)=>{
-      const d=m.c-m.p;
-      html+=`<div class="mdet-card"><div class="mdet-title">Maq. LIQ ${i+1}</div>
-        <div class="mdet-row"><span class="k">Anterior</span><span class="v">${fmt(m.p)}</span></div>
-        <div class="mdet-row"><span class="k">Actual</span><span class="v">${fmt(m.c)}</span></div>
-        <div class="mdet-row"><span class="k">Venta</span><span class="diff${d<0?' neg':''}">${fmt(d)}</span></div></div>`;
-    });
+    html+=`<div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:8px;font-weight:600">⛽ Lecturas Líquido</div><div class="machines-detail-grid">`;
+    t.machines.liq.forEach((m,i)=>{const d=m.c-m.p;html+=`<div class="mdet-card"><div class="mdet-title">Maq. LIQ ${i+1}</div><div class="mdet-row"><span class="k">Anterior</span><span class="v">${fmt(m.p)}</span></div><div class="mdet-row"><span class="k">Actual</span><span class="v">${fmt(m.c)}</span></div><div class="mdet-row"><span class="k">Venta</span><span class="diff${d<0?' neg':''}">${fmt(d)}</span></div></div>`;});
     html+=`</div>`;
   }
   if(t.machines&&t.machines.glp&&t.machines.glp.length){
-    html+=`<div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin:12px 0 8px;font-weight:600">🔵 Lecturas GLP</div>`;
-    html+=`<div class="machines-detail-grid">`;
-    t.machines.glp.forEach((m,i)=>{
-      const d=m.c-m.p;
-      html+=`<div class="mdet-card"><div class="mdet-title">Maq. GLP ${i+1}</div>
-        <div class="mdet-row"><span class="k">Anterior</span><span class="v">${fmt(m.p)}</span></div>
-        <div class="mdet-row"><span class="k">Actual</span><span class="v">${fmt(m.c)}</span></div>
-        <div class="mdet-row"><span class="k">Venta</span><span class="diff${d<0?' neg':''}">${fmt(d)}</span></div></div>`;
-    });
+    html+=`<div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin:12px 0 8px;font-weight:600">🔵 Lecturas GLP</div><div class="machines-detail-grid">`;
+    t.machines.glp.forEach((m,i)=>{const d=m.c-m.p;html+=`<div class="mdet-card"><div class="mdet-title">Maq. GLP ${i+1}</div><div class="mdet-row"><span class="k">Anterior</span><span class="v">${fmt(m.p)}</span></div><div class="mdet-row"><span class="k">Actual</span><span class="v">${fmt(m.c)}</span></div><div class="mdet-row"><span class="k">Venta</span><span class="diff${d<0?' neg':''}">${fmt(d)}</span></div></div>`;});
     html+=`</div>`;
   }
   html+=`</div>`; return html;
 }
-function exportarCSV(){
+window.exportarCSV = function(){
   if(!S.turnos.length){toast('No hay datos',true);return;}
   const h=['Fecha','Sede','Turno','Enc.GLP','Enc.Liquido','Solo','Total Liq','Total GLP','Total','Diff/Balance','Diff GLP'];
   const rows=S.turnos.map(t=>[t.fecha,t.sede,t.turno,t.encGlp||'',t.encLiq||'',t.solo?'SI':'NO',
@@ -1052,11 +1168,9 @@ function exportarCSV(){
   a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
   a.download='grifo_turnos_'+new Date().toISOString().split('T')[0]+'.csv';
   a.click();toast('✅ CSV exportado');
-}
+};
 
-// ═══════════════════════════════════════════
-//  ADMIN — SEDES
-// ═══════════════════════════════════════════
+// ─── ADMIN — SEDES ──────────────────────────────────
 function renderAdminSedes(){
   const div=document.getElementById('sedes-list');div.innerHTML='';
   S.allSedes.forEach(s=>{
@@ -1066,25 +1180,24 @@ function renderAdminSedes(){
     div.appendChild(chip);
   });
 }
-function toggleSede(s){
+window.toggleSede = async function(s){
   const idx=S.activeSedes.indexOf(s);
   if(idx>=0){if(S.activeSedes.length<=1){toast('⚠️ Mínimo una sede activa',true);return;}S.activeSedes.splice(idx,1);}
   else S.activeSedes.push(s);
-  persist();renderAdminSedes();renderNamesGrid();buildSedeSelect();
-}
-function addSede(){
+  await persistSedes(); renderAdminSedes(); renderNamesGrid(); buildSedeSelect();
+};
+window.addSede = async function(){
   const inp=document.getElementById('new-sede');const name=inp.value.trim().toUpperCase();
   if(!name){toast('⚠️ Escribe el nombre',true);return;}
   if(S.allSedes.includes(name)){toast('Esa sede ya existe',true);return;}
   S.allSedes.push(name);S.activeSedes.push(name);
   if(!S.names[name])S.names[name]=[];
-  persist();inp.value='';renderAdminSedes();renderNamesGrid();buildSedeSelect();
+  await persistSedes(); await persistNames();
+  inp.value=''; renderAdminSedes(); renderNamesGrid(); buildSedeSelect();
   toast('✅ Sede '+name+' creada');
-}
+};
 
-// ═══════════════════════════════════════════
-//  ADMIN — PERSONAL
-// ═══════════════════════════════════════════
+// ─── ADMIN — PERSONAL ───────────────────────────────
 function renderNamesGrid(){
   const g=document.getElementById('names-grid');g.innerHTML='';
   S.allSedes.forEach(sede=>{
@@ -1107,25 +1220,30 @@ function renderNamesGrid(){
     });
   });
 }
-function addName(sede){
+window.addName = async function(sede){
   const inp=document.getElementById('nn-'+sede);const name=inp.value.trim().toUpperCase();
   if(!name)return;if(!S.names[sede])S.names[sede]=[];
   if(S.names[sede].includes(name)){toast('Ya existe',true);return;}
-  S.names[sede].push(name);persist();inp.value='';
+  S.names[sede].push(name);await persistNames();inp.value='';
   renderNamesGrid();updatePersonal();toast('✅ '+name+' agregado');
-}
-function removeName(sede,name){
+};
+window.removeName = async function(sede,name){
   S.names[sede]=(S.names[sede]||[]).filter(n=>n!==name);
-  persist();renderNamesGrid();updatePersonal();
-}
-function clearAll(){
-  if(!confirm('¿Eliminar TODOS los turnos?'))return;
-  S.turnos=[];expandedIds.clear();persist();toast('🗑️ Datos eliminados');
-}
+  await persistNames(); renderNamesGrid(); updatePersonal();
+};
+window.clearAll = async function(){
+  if(!confirm('¿Eliminar TODOS los turnos? No se puede deshacer.'))return;
+  setSyncStatus('saving','Eliminando…');
+  try{
+    await fbRemove('turnos');
+    S.turnos=[]; expandedIds.clear();
+    setSyncStatus('ok','Sincronizado ✓');
+    toast('🗑️ Datos eliminados');
+    renderHistorial();
+  }catch(e){setSyncStatus('err','Error');toast('⚠️ Error al eliminar',true);}
+};
 
-// ═══════════════════════════════════════════
-//  UTILS
-// ═══════════════════════════════════════════
+// ─── UTILS ──────────────────────────────────────────
 function fmt(n){return(Math.abs(n)<0.001?0:n).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function toast(msg,err,type){
   const el=document.getElementById('toast');
@@ -1133,6 +1251,14 @@ function toast(msg,err,type){
   el.className='toast show'+(err?' error':type==='warn'?' warn':'');
   setTimeout(()=>el.classList.remove('show'),3500);
 }
+
+// ─── BOOTSTRAP ──────────────────────────────────────
+// Show login after firebase SDK loads (brief delay)
+setTimeout(()=>{
+  document.getElementById('loading-overlay').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+}, 800);
+
 </script>
 </body>
 </html>
