@@ -1048,17 +1048,19 @@ function renderDesc(filter){
   S.turnos.forEach(t=>{
     if(filter!=='TODAS'&&t.sede!==filter)return;
     if(t.solo){
-      const n=t.encGlp,d=t.diffL;
-      if(!n||d===null||d===undefined)return;
+      const n=t.encGlp;
+      const d=(t.diffL!==null&&t.diffL!==undefined)?Number(t.diffL):null;
+      if(!n||d===null)return;
       if(!W[n])W[n]={sede:t.sede,faltante:0,sobrante:0,turnos:0};
       W[n].turnos++;
       if(d<0)W[n].faltante+=d; else if(d>0)W[n].sobrante+=d;
     } else {
       [{n:t.encLiq,d:t.diffL},{n:t.encGlp,d:t.diffG}].forEach(({n,d})=>{
-        if(!n||d===null||d===undefined)return;
+        const dv=(d!==null&&d!==undefined)?Number(d):null;
+        if(!n||dv===null)return;
         if(!W[n])W[n]={sede:t.sede,faltante:0,sobrante:0,turnos:0};
         W[n].turnos++;
-        if(d<0)W[n].faltante+=d; else if(d>0)W[n].sobrante+=d;
+        if(dv<0)W[n].faltante+=dv; else if(dv>0)W[n].sobrante+=dv;
       });
     }
   });
@@ -1082,15 +1084,19 @@ function renderDesc(filter){
 // ─── HISTORIAL ──────────────────────────────────────
 function buildHistFilter(){
   const sel=document.getElementById('hist-filter');
-  const prev=sel.value;
+  const prev=sel.value||'TODAS';
   sel.innerHTML='<option value="TODAS">Todas las sedes</option>';
   S.activeSedes.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;sel.appendChild(o);});
-  if(prev)sel.value=prev;
+  // Restore previously selected value if it still exists, otherwise default to TODAS
+  const exists=[...sel.options].some(o=>o.value===prev);
+  sel.value = exists ? prev : 'TODAS';
 }
 let expandedIds=new Set();
 function renderHistorial(){
   const tbody=document.getElementById('hist-tbody');
-  const f=document.getElementById('hist-filter').value;
+  // Rebuild the sede filter options every render so they stay current
+  buildHistFilter();
+  const f=document.getElementById('hist-filter').value||'TODAS';
   const rows=S.turnos.filter(t=>f==='TODAS'||t.sede===f);
   if(!rows.length){tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:var(--text3);padding:32px;">Sin registros</td></tr>';return;}
   tbody.innerHTML='';
@@ -1101,10 +1107,13 @@ function renderHistorial(){
     if(isEditing)r.classList.add('editing');
     r.id='hr-'+t.id;
     const liqDisp=t.solo?'<span style="color:var(--purple);font-size:.72rem">= GLP</span>':(t.encLiq||'—');
-    const diffLDisp=t.diffL!==null?(t.diffL>=0?'+':'')+fmt(t.diffL):'—';
-    const diffLClass=t.diffL===null?'':t.diffL>=0?'val-pos':'val-neg';
-    const diffGDisp=t.solo?'<span style="color:var(--text3);font-size:.72rem">—</span>':(t.diffG!==null?(t.diffG>=0?'+':'')+fmt(t.diffG):'—');
-    const diffGClass=(!t.solo&&t.diffG!==null)?(t.diffG>=0?'val-pos':'val-neg'):'';
+    // Safely handle null/undefined from Firebase (Firebase drops null fields)
+    const dL = (t.diffL !== null && t.diffL !== undefined) ? Number(t.diffL) : null;
+    const dG = (t.diffG !== null && t.diffG !== undefined) ? Number(t.diffG) : null;
+    const diffLDisp = dL !== null ? (dL>=0?'+':'')+fmt(dL) : '—';
+    const diffLClass = dL !== null ? (dL>=0?'val-pos':'val-neg') : '';
+    const diffGDisp = t.solo ? '<span style="color:var(--text3);font-size:.72rem">—</span>' : (dG !== null ? (dG>=0?'+':'')+fmt(dG) : '—');
+    const diffGClass = (!t.solo && dG !== null) ? (dG>=0?'val-pos':'val-neg') : '';
     r.innerHTML=`
       <td style="color:var(--text);font-weight:600">${t.fecha}</td>
       <td>${t.sede}</td>
@@ -1136,6 +1145,7 @@ window.toggleExpand = function(id,e){
   renderHistorial();
 };
 function buildDetailHTML(t){
+  const sf=(v)=>fmt(Number(v)||0); // safe fmt
   let html=`<div style="padding:4px 0"><div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;">`;
   html+=`<div style="background:var(--blue-dim);border:1px solid rgba(56,189,248,.2);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--blue)">💧 Líquido: <strong>${t.encLiq||'—'}</strong>${t.solo?' (único)':''}</div>`;
   html+=`<div style="background:var(--purple-dim);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--purple)">🔵 GLP: <strong>${t.encGlp||'—'}</strong></div>`;
@@ -1147,12 +1157,12 @@ function buildDetailHTML(t){
   html+=`</div>`;
   if(t.machines&&t.machines.liq&&t.machines.liq.length){
     html+=`<div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:8px;font-weight:600">⛽ Lecturas Líquido</div><div class="machines-detail-grid">`;
-    t.machines.liq.forEach((m,i)=>{const d=m.c-m.p;html+=`<div class="mdet-card"><div class="mdet-title">Maq. LIQ ${i+1}</div><div class="mdet-row"><span class="k">Anterior</span><span class="v">${fmt(m.p)}</span></div><div class="mdet-row"><span class="k">Actual</span><span class="v">${fmt(m.c)}</span></div><div class="mdet-row"><span class="k">Venta</span><span class="diff${d<0?' neg':''}">${fmt(d)}</span></div></div>`;});
+    t.machines.liq.forEach((m,i)=>{const d=(Number(m.c)||0)-(Number(m.p)||0);html+=`<div class="mdet-card"><div class="mdet-title">Maq. LIQ ${i+1}</div><div class="mdet-row"><span class="k">Anterior</span><span class="v">${sf(m.p)}</span></div><div class="mdet-row"><span class="k">Actual</span><span class="v">${sf(m.c)}</span></div><div class="mdet-row"><span class="k">Venta</span><span class="diff${d<0?' neg':''}">${sf(d)}</span></div></div>`;});
     html+=`</div>`;
   }
   if(t.machines&&t.machines.glp&&t.machines.glp.length){
     html+=`<div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin:12px 0 8px;font-weight:600">🔵 Lecturas GLP</div><div class="machines-detail-grid">`;
-    t.machines.glp.forEach((m,i)=>{const d=m.c-m.p;html+=`<div class="mdet-card"><div class="mdet-title">Maq. GLP ${i+1}</div><div class="mdet-row"><span class="k">Anterior</span><span class="v">${fmt(m.p)}</span></div><div class="mdet-row"><span class="k">Actual</span><span class="v">${fmt(m.c)}</span></div><div class="mdet-row"><span class="k">Venta</span><span class="diff${d<0?' neg':''}">${fmt(d)}</span></div></div>`;});
+    t.machines.glp.forEach((m,i)=>{const d=(Number(m.c)||0)-(Number(m.p)||0);html+=`<div class="mdet-card"><div class="mdet-title">Maq. GLP ${i+1}</div><div class="mdet-row"><span class="k">Anterior</span><span class="v">${sf(m.p)}</span></div><div class="mdet-row"><span class="k">Actual</span><span class="v">${sf(m.c)}</span></div><div class="mdet-row"><span class="k">Venta</span><span class="diff${d<0?' neg':''}">${sf(d)}</span></div></div>`;});
     html+=`</div>`;
   }
   html+=`</div>`; return html;
@@ -1160,9 +1170,10 @@ function buildDetailHTML(t){
 window.exportarCSV = function(){
   if(!S.turnos.length){toast('No hay datos',true);return;}
   const h=['Fecha','Sede','Turno','Enc.GLP','Enc.Liquido','Solo','Total Liq','Total GLP','Total','Diff/Balance','Diff GLP'];
+  const safeFixed=(v)=>(v!==null&&v!==undefined)?Number(v).toFixed(2):'';
   const rows=S.turnos.map(t=>[t.fecha,t.sede,t.turno,t.encGlp||'',t.encLiq||'',t.solo?'SI':'NO',
-    t.liqTotal.toFixed(2),t.glpTotal.toFixed(2),t.total.toFixed(2),
-    t.diffL!==null?t.diffL.toFixed(2):'',t.diffG!==null?t.diffG.toFixed(2):'']);
+    Number(t.liqTotal||0).toFixed(2),Number(t.glpTotal||0).toFixed(2),Number(t.total||0).toFixed(2),
+    safeFixed(t.diffL),safeFixed(t.diffG)]);
   const csv=[h,...rows].map(r=>r.join(',')).join('\n');
   const a=document.createElement('a');
   a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
