@@ -180,6 +180,28 @@ select option{background:var(--surface2);}
   padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:0;}
 .edit-banner-text{font-size:.82rem;color:var(--yellow);font-weight:600;flex:1;}
 
+/* ══ QUINCENA SECTION ══ */
+.quinc-section{margin-bottom:32px;}
+.quinc-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 18px;border-radius:10px;margin-bottom:16px;
+  background:var(--surface2);border:1px solid var(--border);
+  cursor:pointer;user-select:none;transition:border-color .2s;
+}
+.quinc-header:hover{border-color:var(--accent);}
+.quinc-header.q1{border-left:4px solid var(--blue);}
+.quinc-header.q2{border-left:4px solid var(--purple);}
+.quinc-label{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.05rem;
+  letter-spacing:1.5px;text-transform:uppercase;color:var(--text);}
+.quinc-label.q1{color:var(--blue);}
+.quinc-label.q2{color:var(--purple);}
+.quinc-meta{font-size:.75rem;color:var(--text3);margin-top:2px;}
+.quinc-toggle-icon{font-size:.85rem;color:var(--text3);transition:transform .2s;}
+.quinc-body{display:none;}
+.quinc-body.open{display:block;}
+.quinc-filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center;}
+.quinc-filter-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);font-weight:600;}
+
 /* ══ IMPORT PANEL ══ */
 .import-panel{background:var(--blue-dim);border:1px solid rgba(56,189,248,.3);border-radius:12px;
   padding:20px;margin-bottom:0;}
@@ -440,11 +462,15 @@ tr:last-child td{border-bottom:none;}
   <!-- DESCUENTOS TAB -->
   <div id="tab-descuentos" class="tab-content">
   <div class="desc-tab-layout">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
       <h2 style="font-family:'Rajdhani',sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Balance por Trabajador</h2>
-      <div id="desc-filters" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <span style="font-size:.72rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);font-weight:600;">Sede:</span>
+        <div id="desc-filters" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+      </div>
     </div>
-    <div class="workers-grid" id="workers-grid">
+    <p style="font-size:.8rem;color:var(--text3);margin-bottom:20px;">Los balances están separados por quincena. Días 1–15 = 1° quincena · Día 16 al último del mes = 2° quincena. El día 31 (y el 29/30 en meses cortos) se incluye siempre en la 2° quincena.</p>
+    <div id="desc-quinc-container">
       <div class="empty-state"><div class="icon">💰</div><p>Aún no hay turnos guardados</p></div>
     </div>
   </div>
@@ -464,7 +490,7 @@ tr:last-child td{border-bottom:none;}
     <div class="hist-table-wrap">
       <table>
         <thead><tr>
-          <th>Fecha</th><th>Sede</th><th>Turno</th>
+          <th>Fecha</th><th>Quincena</th><th>Sede</th><th>Turno</th>
           <th>Enc. GLP</th><th>Enc. Líquido</th>
           <th>Total Líq.</th><th>Total GLP</th><th>Total</th>
           <th>Diff/Balance</th><th>Diff GLP</th><th>Modo</th>
@@ -644,7 +670,7 @@ function subscribeToChanges(){
     const active = document.querySelector('.tab-content.active');
     if(active){
       if(active.id==='tab-historial')  renderHistorial();
-      if(active.id==='tab-descuentos') renderDesc('TODAS');
+      if(active.id==='tab-descuentos') renderDesc();
     }
     setSyncStatus('ok','Sincronizado ✓');
   });
@@ -766,7 +792,7 @@ window.showTab = function(id, btn){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
   btn.classList.add('active');
-  if(id==='descuentos'){buildDescFilters();renderDesc('TODAS');}
+  if(id==='descuentos'){buildDescFilters();renderDesc();}
   if(id==='historial'){buildHistFilter();renderHistorial();}
   if(id==='admin'){renderAdminSedes();renderNamesGrid();}
 };
@@ -1028,58 +1054,160 @@ window.deleteTurno = async function(id,e){
   renderHistorial(); toast('🗑️ Turno eliminado');
 };
 
+// ─── QUINCENA HELPERS ───────────────────────────────
+// Returns how many days a given month has (handles leap years)
+function daysInMonth(year, month){ // month 1-based
+  return new Date(year, month, 0).getDate();
+}
+// Given a fecha string "YYYY-MM-DD", returns a quincena key like "Mayo 1°" or "Mayo 2°"
+function getQuincenaKey(fecha){
+  if(!fecha) return null;
+  const [y,m,d] = fecha.split('-').map(Number);
+  const mes = new Date(y, m-1, 1).toLocaleString('es-PE',{month:'long'});
+  const mesTitle = mes.charAt(0).toUpperCase()+mes.slice(1);
+  const q = d <= 15 ? '1°' : '2°';
+  return `${y}-${String(m).padStart(2,'0')}-${q}`; // sortable key
+}
+function getQuincenaLabel(key){
+  if(!key) return '—';
+  const [y,m,q] = key.split('-');
+  const mes = new Date(Number(y), Number(m)-1, 1).toLocaleString('es-PE',{month:'long'});
+  const mesTitle = mes.charAt(0).toUpperCase()+mes.slice(1);
+  return `${mesTitle} ${q} — ${y}`;
+}
+function getQuincenaShort(key){
+  if(!key) return '—';
+  const [y,m,q] = key.split('-');
+  const mes = new Date(Number(y), Number(m)-1, 1).toLocaleString('es-PE',{month:'long'});
+  return mes.charAt(0).toUpperCase()+mes.slice(1)+' '+q;
+}
+// Returns "1°" or "2°" from a quincena key
+function getQNum(key){ return key ? key.split('-')[2] : null; }
+
+// Active sede filter for descuentos
+let descSedeFilter = 'TODAS';
+// Track which quincena sections are collapsed (key → bool)
+let quinCollapseState = {};
+
 // ─── DESCUENTOS ─────────────────────────────────────
 function buildDescFilters(){
   const div=document.getElementById('desc-filters');
-  div.innerHTML='<button class="btn-filter active" onclick="filterD(\'TODAS\',this)">Todas</button>';
+  div.innerHTML='';
+  const allBtn=document.createElement('button');
+  allBtn.className='btn-filter'+(descSedeFilter==='TODAS'?' active':'');
+  allBtn.textContent='Todas';
+  allBtn.onclick=()=>{descSedeFilter='TODAS';buildDescFilters();renderDesc();};
+  div.appendChild(allBtn);
   S.activeSedes.forEach(s=>{
-    const b=document.createElement('button');b.className='btn-filter';b.textContent=s;
-    b.onclick=function(){filterD(s,this);};div.appendChild(b);
+    const b=document.createElement('button');
+    b.className='btn-filter'+(descSedeFilter===s?' active':'');
+    b.textContent=s;
+    b.onclick=()=>{descSedeFilter=s;buildDescFilters();renderDesc();};
+    div.appendChild(b);
   });
 }
 window.filterD = function(sede,btn){
-  document.querySelectorAll('#desc-filters .btn-filter').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');renderDesc(sede);
+  descSedeFilter=sede;buildDescFilters();renderDesc();
 };
-function renderDesc(filter){
-  const grid=document.getElementById('workers-grid');
-  if(!S.turnos.length){grid.innerHTML='<div class="empty-state"><div class="icon">💰</div><p>Aún no hay turnos guardados</p></div>';return;}
-  const W={};
+
+function renderDesc(){
+  const container=document.getElementById('desc-quinc-container');
+  if(!S.turnos.length){
+    container.innerHTML='<div class="empty-state"><div class="icon">💰</div><p>Aún no hay turnos guardados</p></div>';
+    return;
+  }
+
+  // Build: { quincenaKey: { workerName: {sede, faltante, sobrante, turnos} } }
+  const byQ = {};
   S.turnos.forEach(t=>{
-    if(filter!=='TODAS'&&t.sede!==filter)return;
+    if(descSedeFilter!=='TODAS' && t.sede!==descSedeFilter) return;
+    const qk = getQuincenaKey(t.fecha);
+    if(!qk) return;
+    if(!byQ[qk]) byQ[qk]={};
+    const W = byQ[qk];
+
+    const addWorker=(name,diff)=>{
+      const dv=(diff!==null&&diff!==undefined)?Number(diff):null;
+      if(!name||dv===null) return;
+      if(!W[name]) W[name]={sede:t.sede,faltante:0,sobrante:0,turnos:0};
+      W[name].turnos++;
+      if(dv<0) W[name].faltante+=dv; else if(dv>0) W[name].sobrante+=dv;
+    };
+
     if(t.solo){
-      const n=t.encGlp;
-      const d=(t.diffL!==null&&t.diffL!==undefined)?Number(t.diffL):null;
-      if(!n||d===null)return;
-      if(!W[n])W[n]={sede:t.sede,faltante:0,sobrante:0,turnos:0};
-      W[n].turnos++;
-      if(d<0)W[n].faltante+=d; else if(d>0)W[n].sobrante+=d;
+      addWorker(t.encGlp, t.diffL);
     } else {
-      [{n:t.encLiq,d:t.diffL},{n:t.encGlp,d:t.diffG}].forEach(({n,d})=>{
-        const dv=(d!==null&&d!==undefined)?Number(d):null;
-        if(!n||dv===null)return;
-        if(!W[n])W[n]={sede:t.sede,faltante:0,sobrante:0,turnos:0};
-        W[n].turnos++;
-        if(dv<0)W[n].faltante+=dv; else if(dv>0)W[n].sobrante+=dv;
-      });
+      addWorker(t.encLiq, t.diffL);
+      addWorker(t.encGlp, t.diffG);
     }
   });
-  if(!Object.keys(W).length){grid.innerHTML='<div class="empty-state"><div class="icon">💰</div><p>Sin datos para esta sede</p></div>';return;}
-  grid.innerHTML='';
-  Object.entries(W).sort(([a],[b])=>a.localeCompare(b)).forEach(([name,data])=>{
-    const bal=data.faltante+data.sobrante;
-    const bc=bal>0?'pos':bal<0?'neg':'zero';
-    const card=document.createElement('div');card.className='worker-card';
-    card.innerHTML=`
-      <div class="worker-sede">${data.sede}</div>
-      <div class="worker-name">${name}</div>
-      <div class="stat-row"><span class="stat-key">Turnos</span><span class="stat-val neu">${data.turnos}</span></div>
-      <div class="stat-row"><span class="stat-key">Total faltante</span><span class="stat-val neg">${fmt(data.faltante)}</span></div>
-      <div class="stat-row"><span class="stat-key">Total sobrante</span><span class="stat-val pos">+${fmt(data.sobrante)}</span></div>
-      <div class="balance-total ${bc}">Balance: ${bal>=0?'+':''}${fmt(bal)}</div>`;
-    grid.appendChild(card);
+
+  const keys = Object.keys(byQ).sort().reverse(); // newest first
+  if(!keys.length){
+    container.innerHTML='<div class="empty-state"><div class="icon">💰</div><p>Sin datos para esta sede</p></div>';
+    return;
+  }
+
+  container.innerHTML='';
+  keys.forEach(qk=>{
+    const W = byQ[qk];
+    const qNum = getQNum(qk); // "1°" or "2°"
+    const isQ1 = qNum==='1°';
+    const label = getQuincenaLabel(qk);
+    const shortLabel = getQuincenaShort(qk);
+
+    // Compute total balance for header
+    let totalBal=0, totalFalt=0, totalSobr=0;
+    Object.values(W).forEach(d=>{ totalBal+=(d.faltante+d.sobrante); totalFalt+=d.faltante; totalSobr+=d.sobrante; });
+    const balColor = totalBal>0?'var(--green)':totalBal<0?'var(--red)':'var(--text2)';
+
+    // Determine open/closed
+    if(quinCollapseState[qk]===undefined) quinCollapseState[qk]=true; // default open
+    const isOpen = quinCollapseState[qk];
+
+    const section=document.createElement('div');
+    section.className='quinc-section';
+    section.innerHTML=`
+      <div class="quinc-header ${isQ1?'q1':'q2'}" onclick="toggleQuinc('${qk}')">
+        <div>
+          <div class="quinc-label ${isQ1?'q1':'q2'}">${isQ1?'📅':'📅'} ${label}</div>
+          <div class="quinc-meta">${Object.keys(W).length} trabajador(es) · Faltante: ${fmt(totalFalt)} · Sobrante: +${fmt(totalSobr)}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-family:'DM Mono',monospace;font-size:1rem;font-weight:600;color:${balColor}">${totalBal>=0?'+':''}${fmt(totalBal)}</span>
+          <span class="quinc-toggle-icon" id="qi-${qk}" style="transform:${isOpen?'rotate(0)':'rotate(-90deg)'}"">▼</span>
+        </div>
+      </div>
+      <div class="quinc-body ${isOpen?'open':''}" id="qb-${qk}">
+        <div class="workers-grid" id="wg-${qk}"></div>
+      </div>`;
+    container.appendChild(section);
+
+    const grid=document.getElementById('wg-'+qk);
+    Object.entries(W).sort(([a],[b])=>a.localeCompare(b)).forEach(([name,data])=>{
+      const bal=data.faltante+data.sobrante;
+      const bc=bal>0?'pos':bal<0?'neg':'zero';
+      const card=document.createElement('div');card.className='worker-card';
+      card.innerHTML=`
+        <div class="worker-sede">${data.sede}</div>
+        <div class="worker-name">${name}</div>
+        <div style="font-size:.68rem;color:${isQ1?'var(--blue)':'var(--purple)'};text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-weight:600">${shortLabel}</div>
+        <div class="stat-row"><span class="stat-key">Turnos</span><span class="stat-val neu">${data.turnos}</span></div>
+        <div class="stat-row"><span class="stat-key">Total faltante</span><span class="stat-val neg">${fmt(data.faltante)}</span></div>
+        <div class="stat-row"><span class="stat-key">Total sobrante</span><span class="stat-val pos">+${fmt(data.sobrante)}</span></div>
+        <div class="balance-total ${bc}">Balance quincena: ${bal>=0?'+':''}${fmt(bal)}</div>`;
+      grid.appendChild(card);
+    });
   });
 }
+
+window.toggleQuinc = function(qk){
+  quinCollapseState[qk] = !quinCollapseState[qk];
+  const body=document.getElementById('qb-'+qk);
+  const icon=document.getElementById('qi-'+qk);
+  if(body) body.classList.toggle('open', quinCollapseState[qk]);
+  if(icon) icon.style.transform = quinCollapseState[qk]?'rotate(0)':'rotate(-90deg)';
+};
 
 // ─── HISTORIAL ──────────────────────────────────────
 function buildHistFilter(){
@@ -1087,18 +1215,16 @@ function buildHistFilter(){
   const prev=sel.value||'TODAS';
   sel.innerHTML='<option value="TODAS">Todas las sedes</option>';
   S.activeSedes.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;sel.appendChild(o);});
-  // Restore previously selected value if it still exists, otherwise default to TODAS
   const exists=[...sel.options].some(o=>o.value===prev);
-  sel.value = exists ? prev : 'TODAS';
+  sel.value=exists?prev:'TODAS';
 }
 let expandedIds=new Set();
 function renderHistorial(){
   const tbody=document.getElementById('hist-tbody');
-  // Rebuild the sede filter options every render so they stay current
   buildHistFilter();
   const f=document.getElementById('hist-filter').value||'TODAS';
   const rows=S.turnos.filter(t=>f==='TODAS'||t.sede===f);
-  if(!rows.length){tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:var(--text3);padding:32px;">Sin registros</td></tr>';return;}
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="13" style="text-align:center;color:var(--text3);padding:32px;">Sin registros</td></tr>';return;}
   tbody.innerHTML='';
   const ro=AUTH.level==='readonly';
   [...rows].reverse().forEach(t=>{
@@ -1107,21 +1233,26 @@ function renderHistorial(){
     if(isEditing)r.classList.add('editing');
     r.id='hr-'+t.id;
     const liqDisp=t.solo?'<span style="color:var(--purple);font-size:.72rem">= GLP</span>':(t.encLiq||'—');
-    // Safely handle null/undefined from Firebase (Firebase drops null fields)
-    const dL = (t.diffL !== null && t.diffL !== undefined) ? Number(t.diffL) : null;
-    const dG = (t.diffG !== null && t.diffG !== undefined) ? Number(t.diffG) : null;
-    const diffLDisp = dL !== null ? (dL>=0?'+':'')+fmt(dL) : '—';
-    const diffLClass = dL !== null ? (dL>=0?'val-pos':'val-neg') : '';
-    const diffGDisp = t.solo ? '<span style="color:var(--text3);font-size:.72rem">—</span>' : (dG !== null ? (dG>=0?'+':'')+fmt(dG) : '—');
-    const diffGClass = (!t.solo && dG !== null) ? (dG>=0?'val-pos':'val-neg') : '';
+    const dL=(t.diffL!==null&&t.diffL!==undefined)?Number(t.diffL):null;
+    const dG=(t.diffG!==null&&t.diffG!==undefined)?Number(t.diffG):null;
+    const diffLDisp=dL!==null?(dL>=0?'+':'')+fmt(dL):'—';
+    const diffLClass=dL!==null?(dL>=0?'val-pos':'val-neg'):'';
+    const diffGDisp=t.solo?'<span style="color:var(--text3);font-size:.72rem">—</span>':(dG!==null?(dG>=0?'+':'')+fmt(dG):'—');
+    const diffGClass=(!t.solo&&dG!==null)?(dG>=0?'val-pos':'val-neg'):'';
+    // Quincena badge
+    const qk=getQuincenaKey(t.fecha);
+    const qNum=getQNum(qk);
+    const qColor=qNum==='1°'?'var(--blue)':'var(--purple)';
+    const qLabel=qk?`<span style="font-size:.68rem;font-weight:700;color:${qColor};letter-spacing:.5px">${getQuincenaShort(qk)}</span>`:'—';
     r.innerHTML=`
       <td style="color:var(--text);font-weight:600">${t.fecha}</td>
+      <td>${qLabel}</td>
       <td>${t.sede}</td>
       <td><span class="turno-tag ${t.turno==='MAÑANA'?'m':'t'}">${t.turno}</span></td>
       <td style="color:var(--text)">${t.encGlp||'—'}</td>
       <td>${liqDisp}</td>
-      <td>${fmt(t.liqTotal)}</td><td>${fmt(t.glpTotal)}</td>
-      <td style="color:var(--accent);font-weight:600">${fmt(t.total)}</td>
+      <td>${fmt(Number(t.liqTotal)||0)}</td><td>${fmt(Number(t.glpTotal)||0)}</td>
+      <td style="color:var(--accent);font-weight:600">${fmt(Number(t.total)||0)}</td>
       <td class="${diffLClass}">${diffLDisp}</td>
       <td class="${diffGClass}">${diffGDisp}</td>
       <td>${t.solo?'<span style="color:var(--purple)">☝️</span>':'—'}</td>
@@ -1134,7 +1265,7 @@ function renderHistorial(){
     tbody.appendChild(r);
     if(expandedIds.has(t.id)){
       const dr=document.createElement('tr');dr.className='hist-detail-row';
-      dr.innerHTML=`<td colspan="12">${buildDetailHTML(t)}</td>`;
+      dr.innerHTML=`<td colspan="13">${buildDetailHTML(t)}</td>`;
       tbody.appendChild(dr);
     }
   });
@@ -1145,14 +1276,14 @@ window.toggleExpand = function(id,e){
   renderHistorial();
 };
 function buildDetailHTML(t){
-  const sf=(v)=>fmt(Number(v)||0); // safe fmt
+  const sf=(v)=>fmt(Number(v)||0);
   let html=`<div style="padding:4px 0"><div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;">`;
   html+=`<div style="background:var(--blue-dim);border:1px solid rgba(56,189,248,.2);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--blue)">💧 Líquido: <strong>${t.encLiq||'—'}</strong>${t.solo?' (único)':''}</div>`;
   html+=`<div style="background:var(--purple-dim);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--purple)">🔵 GLP: <strong>${t.encGlp||'—'}</strong></div>`;
-  if(t.solo&&(t.soloEnt||t.entL)) html+=`<div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--text2)">☝️ Entregó (total): <strong style="color:var(--text);font-family:'DM Mono',monospace">${fmt(t.soloEnt||t.entL)}</strong></div>`;
+  if(t.solo&&(t.soloEnt||t.entL)) html+=`<div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--text2)">☝️ Entregó (total): <strong style="color:var(--text);font-family:'DM Mono',monospace">${sf(t.soloEnt||t.entL)}</strong></div>`;
   else{
-    if(t.entL>0) html+=`<div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--text2)">💧 Entregó Líq: <strong style="color:var(--text);font-family:'DM Mono',monospace">${fmt(t.entL)}</strong></div>`;
-    if(t.entG>0) html+=`<div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--text2)">🔵 Entregó GLP: <strong style="color:var(--text);font-family:'DM Mono',monospace">${fmt(t.entG)}</strong></div>`;
+    if(Number(t.entL)>0) html+=`<div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--text2)">💧 Entregó Líq: <strong style="color:var(--text);font-family:'DM Mono',monospace">${sf(t.entL)}</strong></div>`;
+    if(Number(t.entG)>0) html+=`<div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--text2)">🔵 Entregó GLP: <strong style="color:var(--text);font-family:'DM Mono',monospace">${sf(t.entG)}</strong></div>`;
   }
   html+=`</div>`;
   if(t.machines&&t.machines.liq&&t.machines.liq.length){
@@ -1169,9 +1300,11 @@ function buildDetailHTML(t){
 }
 window.exportarCSV = function(){
   if(!S.turnos.length){toast('No hay datos',true);return;}
-  const h=['Fecha','Sede','Turno','Enc.GLP','Enc.Liquido','Solo','Total Liq','Total GLP','Total','Diff/Balance','Diff GLP'];
   const safeFixed=(v)=>(v!==null&&v!==undefined)?Number(v).toFixed(2):'';
-  const rows=S.turnos.map(t=>[t.fecha,t.sede,t.turno,t.encGlp||'',t.encLiq||'',t.solo?'SI':'NO',
+  const h=['Fecha','Quincena','Sede','Turno','Enc.GLP','Enc.Liquido','Solo','Total Liq','Total GLP','Total','Diff/Balance','Diff GLP'];
+  const rows=S.turnos.map(t=>[
+    t.fecha, getQuincenaShort(getQuincenaKey(t.fecha)),
+    t.sede,t.turno,t.encGlp||'',t.encLiq||'',t.solo?'SI':'NO',
     Number(t.liqTotal||0).toFixed(2),Number(t.glpTotal||0).toFixed(2),Number(t.total||0).toFixed(2),
     safeFixed(t.diffL),safeFixed(t.diffG)]);
   const csv=[h,...rows].map(r=>r.join(',')).join('\n');
