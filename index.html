@@ -269,18 +269,57 @@ tr:last-child td{border-bottom:none;}
   .enc-grid{grid-template-columns:1fr;}
   .solo-cuadre-grid{grid-template-columns:1fr 1fr;}
 }
-/* ══ QUINCENA ══ */
-.quinc-section{margin-bottom:28px;}
-.quinc-header{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-radius:10px;margin-bottom:14px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;user-select:none;transition:border-color .2s;}
-.quinc-header:hover{border-color:var(--accent);}
-.quinc-header.q1{border-left:4px solid var(--blue);}
-.quinc-header.q2{border-left:4px solid var(--purple);}
-.quinc-label{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.05rem;letter-spacing:1.5px;text-transform:uppercase;}
-.quinc-label.q1{color:var(--blue);}.quinc-label.q2{color:var(--purple);}
-.quinc-meta{font-size:.75rem;color:var(--text3);margin-top:2px;}
-.quinc-body{display:none;}
-.quinc-body.open{display:block;}
-.workers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+
+/* ══ PASTE PANEL ══ */
+.paste-panel{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:10px;padding:14px;margin-bottom:0;
+}
+.paste-panel-title{
+  font-size:.72rem;text-transform:uppercase;letter-spacing:.8px;
+  color:var(--accent);font-weight:700;margin-bottom:10px;
+  display:flex;align-items:center;gap:6px;
+}
+.paste-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;}
+.paste-tab{
+  padding:7px;border:1px solid var(--border);border-radius:7px;
+  background:var(--surface3);color:var(--text2);cursor:pointer;
+  font-family:'Exo 2',sans-serif;font-size:.75rem;font-weight:700;
+  letter-spacing:.5px;text-transform:uppercase;transition:all .2s;text-align:center;
+}
+.paste-tab:hover{border-color:var(--accent);color:var(--accent);}
+.paste-tab.active{background:var(--accent);border-color:var(--accent);color:white;}
+.paste-textarea{
+  width:100%;height:76px;background:var(--surface3);
+  border:1px solid var(--border);border-radius:7px;
+  color:var(--text);padding:9px 11px;
+  font-family:'DM Mono',monospace;font-size:.8rem;
+  outline:none;resize:none;transition:border-color .2s;
+  line-height:1.5;
+}
+.paste-textarea:focus{border-color:var(--accent);}
+.paste-textarea::placeholder{color:var(--text3);}
+.paste-preview{
+  margin-top:8px;padding:8px 10px;background:var(--surface3);
+  border:1px solid var(--border);border-radius:7px;
+  font-family:'DM Mono',monospace;font-size:.72rem;
+  color:var(--text2);max-height:60px;overflow:auto;
+  display:none;line-height:1.6;
+}
+.paste-preview.visible{display:block;}
+.paste-actions{display:flex;gap:8px;margin-top:8px;align-items:center;}
+.btn-paste-apply{
+  flex:1;padding:9px;background:var(--accent);border:none;border-radius:7px;
+  color:white;font-family:'Exo 2',sans-serif;font-weight:700;font-size:.8rem;
+  letter-spacing:.5px;text-transform:uppercase;cursor:pointer;transition:all .2s;
+}
+.btn-paste-apply:hover{background:var(--accent2);}
+.btn-paste-clear{
+  padding:9px 12px;background:none;border:1px solid var(--border);border-radius:7px;
+  color:var(--text3);cursor:pointer;font-size:.8rem;transition:all .2s;
+}
+.btn-paste-clear:hover{border-color:var(--red);color:var(--red);}
+.paste-count{font-size:.72rem;color:var(--text3);white-space:nowrap;}
 </style>
 </head>
 <body>
@@ -380,6 +419,32 @@ tr:last-child td{border-bottom:none;}
           </div>
         </div>
       </div>
+      <!-- PASTE PANEL -->
+      <div class="card" id="paste-card">
+        <div class="paste-panel">
+          <div class="paste-panel-title">⚡ Carga rápida de lecturas</div>
+          <p style="font-size:.72rem;color:var(--text3);margin-bottom:10px;line-height:1.5;">
+            Pega los números separados por espacios, comas o saltos de línea. Se cargan en orden: Líq 1→12, luego GLP 1→2.
+          </p>
+          <!-- Tabs: LIQ only / GLP only / Both -->
+          <div class="paste-tabs">
+            <button class="paste-tab active" id="ptab-liq"  onclick="setPasteTab('liq')">⛽ Solo Líquido</button>
+            <button class="paste-tab"        id="ptab-glp"  onclick="setPasteTab('glp')">🔵 Solo GLP</button>
+            <button class="paste-tab"        id="ptab-both" onclick="setPasteTab('both')" style="grid-column:1/-1;">📋 Líquido + GLP (todos)</button>
+          </div>
+          <textarea class="paste-textarea" id="paste-input"
+            placeholder="Pega aquí los números:&#10;123456 789012 345678 ...&#10;&#10;o uno por línea:&#10;123456&#10;789012"
+            oninput="onPasteInput()"
+            onpaste="setTimeout(onPasteInput,10)"></textarea>
+          <div class="paste-preview" id="paste-preview"></div>
+          <div class="paste-actions">
+            <button class="btn-paste-apply" onclick="applyPaste()">✓ Cargar lecturas</button>
+            <button class="btn-paste-clear" onclick="clearPaste()" title="Limpiar">✕</button>
+            <span class="paste-count" id="paste-count"></span>
+          </div>
+        </div>
+      </div>
+
       <button class="btn-save" id="btn-guardar" onclick="guardarTurno()">💾 Guardar Turno</button>
     </div>
 
@@ -452,15 +517,11 @@ tr:last-child td{border-bottom:none;}
   <!-- DESCUENTOS TAB -->
   <div id="tab-descuentos" class="tab-content">
   <div class="desc-tab-layout">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
       <h2 style="font-family:'Rajdhani',sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Balance por Trabajador</h2>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-        <span style="font-size:.72rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);font-weight:600">Sede:</span>
-        <div id="desc-filters" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
-      </div>
+      <div id="desc-filters" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
     </div>
-    <p style="font-size:.8rem;color:var(--text3);margin-bottom:20px;">Días 1–15 = 1° quincena (azul) · Día 16 al último del mes = 2° quincena (morado). Haz clic en el encabezado para colapsar/expandir.</p>
-    <div id="desc-quinc-container">
+    <div class="workers-grid" id="workers-grid">
       <div class="empty-state"><div class="icon">💰</div><p>Aún no hay turnos guardados</p></div>
     </div>
   </div>
@@ -473,21 +534,21 @@ tr:last-child td{border-bottom:none;}
       <h2 style="font-family:'Rajdhani',sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Historial de Turnos</h2>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
         <select id="hist-filter" onchange="renderHistorial()" style="width:auto;padding:8px 12px;"></select>
-        <button class="btn-filter" onclick="abrirModalExport()" style="background:linear-gradient(135deg,#16a34a,#15803d);border-color:#16a34a;color:white;">📊 Descargar Excel</button>
+        <button class="btn-filter" onclick="exportarCSV()">⬇️ CSV</button>
       </div>
     </div>
     <p style="font-size:.8rem;color:var(--text3);margin-bottom:12px;" id="hist-hint">💡 Haz clic en cualquier fila para expandir las lecturas. Usa ✏️ para editar o 🗑️ para eliminar.</p>
     <div class="hist-table-wrap">
       <table>
         <thead><tr>
-          <th>Fecha</th><th>Quincena</th><th>Sede</th><th>Turno</th>
+          <th>Fecha</th><th>Sede</th><th>Turno</th>
           <th>Enc. GLP</th><th>Enc. Líquido</th>
           <th>Total Líq.</th><th>Total GLP</th><th>Total</th>
           <th>Diff/Balance</th><th>Diff GLP</th><th>Modo</th>
           <th id="hist-actions-th">Acciones</th>
         </tr></thead>
         <tbody id="hist-tbody">
-          <tr><td colspan="13" style="text-align:center;color:var(--text3);padding:32px;">Sin registros</td></tr>
+          <tr><td colspan="12" style="text-align:center;color:var(--text3);padding:32px;">Sin registros</td></tr>
         </tbody>
       </table>
     </div>
@@ -529,60 +590,6 @@ tr:last-child td{border-bottom:none;}
       <button onclick="clearAll()" style="padding:10px 20px;background:var(--red-dim);border:1px solid var(--red);border-radius:8px;color:var(--red);cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">🗑️ Limpiar todos los datos</button>
     </div>
   </div>
-  </div>
-
-  <!-- EXPORT MODAL -->
-  <div id="export-modal" style="display:none;position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:20px;">
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;width:100%;max-width:480px;box-shadow:0 24px 80px rgba(0,0,0,.6);">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
-        <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.2rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--green);">📊 Exportar a Excel</div>
-        <button onclick="cerrarModalExport()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:1.3rem;padding:4px 8px;border-radius:6px;transition:all .2s;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='none'">✕</button>
-      </div>
-
-      <div style="margin-bottom:18px;">
-        <label class="form-label">Sede</label>
-        <select id="exp-sede" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 12px;font-family:'DM Mono',monospace;font-size:.9rem;outline:none;">
-          <option value="TODAS">Todas las sedes</option>
-        </select>
-      </div>
-
-      <div style="margin-bottom:18px;">
-        <label class="form-label">Tipo de período</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-          <label id="lbl-tipo-todo"  style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:2px solid var(--accent);border-radius:8px;padding:10px 12px;cursor:pointer;font-size:.82rem;font-weight:600;color:var(--accent);">
-            <input type="radio" name="exp-tipo" value="todo" checked onchange="onExpTipo()" style="accent-color:var(--accent);"> Todo
-          </label>
-          <label id="lbl-tipo-mes"   style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:2px solid var(--border);border-radius:8px;padding:10px 12px;cursor:pointer;font-size:.82rem;font-weight:600;color:var(--text2);">
-            <input type="radio" name="exp-tipo" value="mes"   onchange="onExpTipo()" style="accent-color:var(--accent);"> Por mes
-          </label>
-          <label id="lbl-tipo-quinc" style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:2px solid var(--border);border-radius:8px;padding:10px 12px;cursor:pointer;font-size:.82rem;font-weight:600;color:var(--text2);">
-            <input type="radio" name="exp-tipo" value="quinc" onchange="onExpTipo()" style="accent-color:var(--accent);"> Quincena
-          </label>
-        </div>
-      </div>
-
-      <div id="exp-mes-row" style="display:none;margin-bottom:18px;">
-        <label class="form-label">Mes</label>
-        <select id="exp-mes" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 12px;font-family:'DM Mono',monospace;font-size:.9rem;outline:none;"></select>
-      </div>
-
-      <div id="exp-quinc-row" style="display:none;margin-bottom:18px;">
-        <label class="form-label">Quincena</label>
-        <select id="exp-quinc" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 12px;font-family:'DM Mono',monospace;font-size:.9rem;outline:none;"></select>
-      </div>
-
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:20px;">
-        <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:8px;font-weight:600">El archivo incluirá:</div>
-        <div style="font-size:.82rem;color:var(--text2);line-height:1.8;">
-          📋 <strong style="color:var(--text)">Hoja 1 — Historial:</strong> Todos los turnos del período con fondo amarillo, positivos en verde, negativos en rojo.<br>
-          💰 <strong style="color:var(--text)">Hoja 2 — Descuentos:</strong> Balance quincena/período por trabajador.
-        </div>
-      </div>
-
-      <button onclick="generarExcel()" style="width:100%;padding:14px;background:linear-gradient(135deg,#16a34a,#15803d);border:none;border-radius:10px;color:white;font-family:'Exo 2',sans-serif;font-size:1rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;box-shadow:0 4px 20px rgba(22,163,74,.3);">
-        📥 Generar y Descargar Excel
-      </button>
-    </div>
   </div>
 
 </div><!-- end #app-wrapper -->
@@ -714,7 +721,7 @@ function subscribeToChanges(){
     const active = document.querySelector('.tab-content.active');
     if(active){
       if(active.id==='tab-historial')  renderHistorial();
-      if(active.id==='tab-descuentos') renderDesc();
+      if(active.id==='tab-descuentos') renderDesc('TODAS');
     }
     setSyncStatus('ok','Sincronizado ✓');
   });
@@ -836,7 +843,7 @@ window.showTab = function(id, btn){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
   btn.classList.add('active');
-  if(id==='descuentos'){buildDescFilters();renderDesc();}
+  if(id==='descuentos'){buildDescFilters();renderDesc('TODAS');}
   if(id==='historial'){buildHistFilter();renderHistorial();}
   if(id==='admin'){renderAdminSedes();renderNamesGrid();}
 };
@@ -1098,146 +1105,71 @@ window.deleteTurno = async function(id,e){
   renderHistorial(); toast('🗑️ Turno eliminado');
 };
 
-// ─── QUINCENA HELPERS ───────────────────────────────
-function getQuincenaKey(fecha){
-  if(!fecha)return null;
-  const[y,m,d]=fecha.split('-').map(Number);
-  const q=d<=15?'1°':'2°';
-  return `${y}-${String(m).padStart(2,'0')}-${q}`;
-}
-function getQuincenaLabel(key){
-  if(!key)return '—';
-  const[y,m,q]=key.split('-');
-  const mes=new Date(Number(y),Number(m)-1,1).toLocaleString('es-PE',{month:'long'});
-  return (mes.charAt(0).toUpperCase()+mes.slice(1))+' '+q+' — '+y;
-}
-function getQuincenaShort(key){
-  if(!key)return '—';
-  const[y,m,q]=key.split('-');
-  const mes=new Date(Number(y),Number(m)-1,1).toLocaleString('es-PE',{month:'long'});
-  return (mes.charAt(0).toUpperCase()+mes.slice(1))+' '+q;
-}
-function getQNum(key){return key?key.split('-')[2]:null;}
-
-// expose for non-module scripts
-window.getQuincenaKey=getQuincenaKey;
-window.getQuincenaLabel=getQuincenaLabel;
-window.getQuincenaShort=getQuincenaShort;
-window.getQNum=getQNum;
-
 // ─── DESCUENTOS ─────────────────────────────────────
-let descSedeFilter='TODAS';
-let quinCollapseState={};
-
 function buildDescFilters(){
   const div=document.getElementById('desc-filters');
-  div.innerHTML='';
-  const allBtn=document.createElement('button');
-  allBtn.className='btn-filter'+(descSedeFilter==='TODAS'?' active':'');
-  allBtn.textContent='Todas';
-  allBtn.onclick=()=>{descSedeFilter='TODAS';buildDescFilters();renderDesc();};
-  div.appendChild(allBtn);
+  div.innerHTML='<button class="btn-filter active" onclick="filterD(\'TODAS\',this)">Todas</button>';
   S.activeSedes.forEach(s=>{
-    const b=document.createElement('button');
-    b.className='btn-filter'+(descSedeFilter===s?' active':'');
-    b.textContent=s;
-    b.onclick=()=>{descSedeFilter=s;buildDescFilters();renderDesc();};
-    div.appendChild(b);
+    const b=document.createElement('button');b.className='btn-filter';b.textContent=s;
+    b.onclick=function(){filterD(s,this);};div.appendChild(b);
   });
 }
-window.filterD=function(sede,btn){descSedeFilter=sede;buildDescFilters();renderDesc();};
-window.toggleQuinc=function(qk){
-  quinCollapseState[qk]=!quinCollapseState[qk];
-  const body=document.getElementById('qb-'+qk);
-  const icon=document.getElementById('qi-'+qk);
-  if(body)body.classList.toggle('open',quinCollapseState[qk]);
-  if(icon)icon.style.transform=quinCollapseState[qk]?'rotate(0)':'rotate(-90deg)';
+window.filterD = function(sede,btn){
+  document.querySelectorAll('#desc-filters .btn-filter').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');renderDesc(sede);
 };
-
-function renderDesc(){
-  // Try new container first, fall back to workers-grid
-  const container=document.getElementById('desc-quinc-container')||document.getElementById('workers-grid');
-  if(!S.turnos.length){container.innerHTML='<div class="empty-state"><div class="icon">💰</div><p>Aún no hay turnos guardados</p></div>';return;}
-  const byQ={};
+function renderDesc(filter){
+  const grid=document.getElementById('workers-grid');
+  if(!S.turnos.length){grid.innerHTML='<div class="empty-state"><div class="icon">💰</div><p>Aún no hay turnos guardados</p></div>';return;}
+  const W={};
   S.turnos.forEach(t=>{
-    if(descSedeFilter!=='TODAS'&&t.sede!==descSedeFilter)return;
-    const qk=getQuincenaKey(t.fecha);if(!qk)return;
-    if(!byQ[qk])byQ[qk]={};
-    const W=byQ[qk];
-    const addWorker=(name,diff)=>{
-      const dv=(diff!==null&&diff!==undefined)?Number(diff):null;
-      if(!name||dv===null)return;
-      if(!W[name])W[name]={sede:t.sede,faltante:0,sobrante:0,turnos:0};
-      W[name].turnos++;
-      if(dv<0)W[name].faltante+=dv; else if(dv>0)W[name].sobrante+=dv;
-    };
-    if(t.solo){addWorker(t.encGlp,t.diffL);}
-    else{addWorker(t.encLiq,t.diffL);addWorker(t.encGlp,t.diffG);}
+    if(filter!=='TODAS'&&t.sede!==filter)return;
+    if(t.solo){
+      const n=t.encGlp,d=t.diffL;
+      if(!n||d===null||d===undefined)return;
+      if(!W[n])W[n]={sede:t.sede,faltante:0,sobrante:0,turnos:0};
+      W[n].turnos++;
+      if(d<0)W[n].faltante+=d; else if(d>0)W[n].sobrante+=d;
+    } else {
+      [{n:t.encLiq,d:t.diffL},{n:t.encGlp,d:t.diffG}].forEach(({n,d})=>{
+        if(!n||d===null||d===undefined)return;
+        if(!W[n])W[n]={sede:t.sede,faltante:0,sobrante:0,turnos:0};
+        W[n].turnos++;
+        if(d<0)W[n].faltante+=d; else if(d>0)W[n].sobrante+=d;
+      });
+    }
   });
-  const keys=Object.keys(byQ).sort().reverse();
-  if(!keys.length){container.innerHTML='<div class="empty-state"><div class="icon">💰</div><p>Sin datos para esta sede</p></div>';return;}
-  container.innerHTML='';
-  keys.forEach(qk=>{
-    const W=byQ[qk];
-    const qNum=getQNum(qk);
-    const isQ1=qNum==='1°';
-    const label=getQuincenaLabel(qk);
-    const shortLabel=getQuincenaShort(qk);
-    let totalBal=0,totalFalt=0,totalSobr=0;
-    Object.values(W).forEach(d=>{totalBal+=(d.faltante+d.sobrante);totalFalt+=d.faltante;totalSobr+=d.sobrante;});
-    const balColor=totalBal>0?'var(--green)':totalBal<0?'var(--red)':'var(--text2)';
-    if(quinCollapseState[qk]===undefined)quinCollapseState[qk]=true;
-    const isOpen=quinCollapseState[qk];
-    const section=document.createElement('div');section.className='quinc-section';
-    section.innerHTML=`
-      <div class="quinc-header ${isQ1?'q1':'q2'}" onclick="toggleQuinc('${qk}')">
-        <div>
-          <div class="quinc-label ${isQ1?'q1':'q2'}">📅 ${label}</div>
-          <div class="quinc-meta">${Object.keys(W).length} trabajador(es) · Faltante: ${fmt(totalFalt)} · Sobrante: +${fmt(totalSobr)}</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:12px;">
-          <span style="font-family:'DM Mono',monospace;font-size:1rem;font-weight:600;color:${balColor}">${totalBal>=0?'+':''}${fmt(totalBal)}</span>
-          <span id="qi-${qk}" style="color:var(--text3);font-size:.85rem;transition:transform .2s;display:inline-block;transform:${isOpen?'rotate(0)':'rotate(-90deg)'}">▼</span>
-        </div>
-      </div>
-      <div class="quinc-body ${isOpen?'open':''}" id="qb-${qk}">
-        <div class="workers-grid" id="wg-${qk}"></div>
-      </div>`;
-    container.appendChild(section);
-    const grid=document.getElementById('wg-'+qk);
-    Object.entries(W).sort(([a],[b])=>a.localeCompare(b)).forEach(([name,data])=>{
-      const bal=data.faltante+data.sobrante;
-      const bc=bal>0?'pos':bal<0?'neg':'zero';
-      const card=document.createElement('div');card.className='worker-card';
-      card.innerHTML=`
-        <div class="worker-sede">${data.sede}</div>
-        <div class="worker-name">${name}</div>
-        <div style="font-size:.68rem;color:${isQ1?'var(--blue)':'var(--purple)'};text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-weight:600">${shortLabel}</div>
-        <div class="stat-row"><span class="stat-key">Turnos</span><span class="stat-val neu">${data.turnos}</span></div>
-        <div class="stat-row"><span class="stat-key">Total faltante</span><span class="stat-val neg">${fmt(data.faltante)}</span></div>
-        <div class="stat-row"><span class="stat-key">Total sobrante</span><span class="stat-val pos">+${fmt(data.sobrante)}</span></div>
-        <div class="balance-total ${bc}">Balance quincena: ${bal>=0?'+':''}${fmt(bal)}</div>`;
-      grid.appendChild(card);
-    });
+  if(!Object.keys(W).length){grid.innerHTML='<div class="empty-state"><div class="icon">💰</div><p>Sin datos para esta sede</p></div>';return;}
+  grid.innerHTML='';
+  Object.entries(W).sort(([a],[b])=>a.localeCompare(b)).forEach(([name,data])=>{
+    const bal=data.faltante+data.sobrante;
+    const bc=bal>0?'pos':bal<0?'neg':'zero';
+    const card=document.createElement('div');card.className='worker-card';
+    card.innerHTML=`
+      <div class="worker-sede">${data.sede}</div>
+      <div class="worker-name">${name}</div>
+      <div class="stat-row"><span class="stat-key">Turnos</span><span class="stat-val neu">${data.turnos}</span></div>
+      <div class="stat-row"><span class="stat-key">Total faltante</span><span class="stat-val neg">${fmt(data.faltante)}</span></div>
+      <div class="stat-row"><span class="stat-key">Total sobrante</span><span class="stat-val pos">+${fmt(data.sobrante)}</span></div>
+      <div class="balance-total ${bc}">Balance: ${bal>=0?'+':''}${fmt(bal)}</div>`;
+    grid.appendChild(card);
   });
 }
 
 // ─── HISTORIAL ──────────────────────────────────────
 function buildHistFilter(){
   const sel=document.getElementById('hist-filter');
-  const prev=sel.value||'TODAS';
+  const prev=sel.value;
   sel.innerHTML='<option value="TODAS">Todas las sedes</option>';
   S.activeSedes.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;sel.appendChild(o);});
-  const exists=[...sel.options].some(o=>o.value===prev);
-  sel.value=exists?prev:'TODAS';
+  if(prev)sel.value=prev;
 }
 let expandedIds=new Set();
 function renderHistorial(){
   const tbody=document.getElementById('hist-tbody');
-  buildHistFilter();
-  const f=document.getElementById('hist-filter').value||'TODAS';
+  const f=document.getElementById('hist-filter').value;
   const rows=S.turnos.filter(t=>f==='TODAS'||t.sede===f);
-  if(!rows.length){tbody.innerHTML='<tr><td colspan="13" style="text-align:center;color:var(--text3);padding:32px;">Sin registros</td></tr>';return;}
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:var(--text3);padding:32px;">Sin registros</td></tr>';return;}
   tbody.innerHTML='';
   const ro=AUTH.level==='readonly';
   [...rows].reverse().forEach(t=>{
@@ -1246,25 +1178,18 @@ function renderHistorial(){
     if(isEditing)r.classList.add('editing');
     r.id='hr-'+t.id;
     const liqDisp=t.solo?'<span style="color:var(--purple);font-size:.72rem">= GLP</span>':(t.encLiq||'—');
-    const dL=(t.diffL!==null&&t.diffL!==undefined)?Number(t.diffL):null;
-    const dG=(t.diffG!==null&&t.diffG!==undefined)?Number(t.diffG):null;
-    const diffLDisp=dL!==null?(dL>=0?'+':'')+fmt(dL):'—';
-    const diffLClass=dL!==null?(dL>=0?'val-pos':'val-neg'):'';
-    const diffGDisp=t.solo?'<span style="color:var(--text3);font-size:.72rem">—</span>':(dG!==null?(dG>=0?'+':'')+fmt(dG):'—');
-    const diffGClass=(!t.solo&&dG!==null)?(dG>=0?'val-pos':'val-neg'):'';
-    const qk=getQuincenaKey(t.fecha);
-    const qNum=getQNum(qk);
-    const qColor=qNum==='1°'?'var(--blue)':'var(--purple)';
-    const qLabel=qk?`<span style="font-size:.68rem;font-weight:700;color:${qColor};letter-spacing:.5px">${getQuincenaShort(qk)}</span>`:'—';
+    const diffLDisp=t.diffL!==null?(t.diffL>=0?'+':'')+fmt(t.diffL):'—';
+    const diffLClass=t.diffL===null?'':t.diffL>=0?'val-pos':'val-neg';
+    const diffGDisp=t.solo?'<span style="color:var(--text3);font-size:.72rem">—</span>':(t.diffG!==null?(t.diffG>=0?'+':'')+fmt(t.diffG):'—');
+    const diffGClass=(!t.solo&&t.diffG!==null)?(t.diffG>=0?'val-pos':'val-neg'):'';
     r.innerHTML=`
       <td style="color:var(--text);font-weight:600">${t.fecha}</td>
-      <td>${qLabel}</td>
       <td>${t.sede}</td>
       <td><span class="turno-tag ${t.turno==='MAÑANA'?'m':'t'}">${t.turno}</span></td>
       <td style="color:var(--text)">${t.encGlp||'—'}</td>
       <td>${liqDisp}</td>
-      <td>${fmt(Number(t.liqTotal)||0)}</td><td>${fmt(Number(t.glpTotal)||0)}</td>
-      <td style="color:var(--accent);font-weight:600">${fmt(Number(t.total)||0)}</td>
+      <td>${fmt(t.liqTotal)}</td><td>${fmt(t.glpTotal)}</td>
+      <td style="color:var(--accent);font-weight:600">${fmt(t.total)}</td>
       <td class="${diffLClass}">${diffLDisp}</td>
       <td class="${diffGClass}">${diffGDisp}</td>
       <td>${t.solo?'<span style="color:var(--purple)">☝️</span>':'—'}</td>
@@ -1277,7 +1202,7 @@ function renderHistorial(){
     tbody.appendChild(r);
     if(expandedIds.has(t.id)){
       const dr=document.createElement('tr');dr.className='hist-detail-row';
-      dr.innerHTML=`<td colspan="13">${buildDetailHTML(t)}</td>`;
+      dr.innerHTML=`<td colspan="12">${buildDetailHTML(t)}</td>`;
       tbody.appendChild(dr);
     }
   });
@@ -1288,286 +1213,38 @@ window.toggleExpand = function(id,e){
   renderHistorial();
 };
 function buildDetailHTML(t){
-  const sf=(v)=>fmt(Number(v)||0);
   let html=`<div style="padding:4px 0"><div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;">`;
   html+=`<div style="background:var(--blue-dim);border:1px solid rgba(56,189,248,.2);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--blue)">💧 Líquido: <strong>${t.encLiq||'—'}</strong>${t.solo?' (único)':''}</div>`;
   html+=`<div style="background:var(--purple-dim);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--purple)">🔵 GLP: <strong>${t.encGlp||'—'}</strong></div>`;
-  if(t.solo&&(t.soloEnt||t.entL)) html+=`<div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--text2)">☝️ Entregó (total): <strong style="color:var(--text);font-family:'DM Mono',monospace">${sf(t.soloEnt||t.entL)}</strong></div>`;
+  if(t.solo&&(t.soloEnt||t.entL)) html+=`<div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--text2)">☝️ Entregó (total): <strong style="color:var(--text);font-family:'DM Mono',monospace">${fmt(t.soloEnt||t.entL)}</strong></div>`;
   else{
-    if(Number(t.entL)>0) html+=`<div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--text2)">💧 Entregó Líq: <strong style="color:var(--text);font-family:'DM Mono',monospace">${sf(t.entL)}</strong></div>`;
-    if(Number(t.entG)>0) html+=`<div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--text2)">🔵 Entregó GLP: <strong style="color:var(--text);font-family:'DM Mono',monospace">${sf(t.entG)}</strong></div>`;
+    if(t.entL>0) html+=`<div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--text2)">💧 Entregó Líq: <strong style="color:var(--text);font-family:'DM Mono',monospace">${fmt(t.entL)}</strong></div>`;
+    if(t.entG>0) html+=`<div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--text2)">🔵 Entregó GLP: <strong style="color:var(--text);font-family:'DM Mono',monospace">${fmt(t.entG)}</strong></div>`;
   }
   html+=`</div>`;
   if(t.machines&&t.machines.liq&&t.machines.liq.length){
     html+=`<div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:8px;font-weight:600">⛽ Lecturas Líquido</div><div class="machines-detail-grid">`;
-    t.machines.liq.forEach((m,i)=>{const d=(Number(m.c)||0)-(Number(m.p)||0);html+=`<div class="mdet-card"><div class="mdet-title">Maq. LIQ ${i+1}</div><div class="mdet-row"><span class="k">Anterior</span><span class="v">${sf(m.p)}</span></div><div class="mdet-row"><span class="k">Actual</span><span class="v">${sf(m.c)}</span></div><div class="mdet-row"><span class="k">Venta</span><span class="diff${d<0?' neg':''}">${sf(d)}</span></div></div>`;});
+    t.machines.liq.forEach((m,i)=>{const d=m.c-m.p;html+=`<div class="mdet-card"><div class="mdet-title">Maq. LIQ ${i+1}</div><div class="mdet-row"><span class="k">Anterior</span><span class="v">${fmt(m.p)}</span></div><div class="mdet-row"><span class="k">Actual</span><span class="v">${fmt(m.c)}</span></div><div class="mdet-row"><span class="k">Venta</span><span class="diff${d<0?' neg':''}">${fmt(d)}</span></div></div>`;});
     html+=`</div>`;
   }
   if(t.machines&&t.machines.glp&&t.machines.glp.length){
     html+=`<div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin:12px 0 8px;font-weight:600">🔵 Lecturas GLP</div><div class="machines-detail-grid">`;
-    t.machines.glp.forEach((m,i)=>{const d=(Number(m.c)||0)-(Number(m.p)||0);html+=`<div class="mdet-card"><div class="mdet-title">Maq. GLP ${i+1}</div><div class="mdet-row"><span class="k">Anterior</span><span class="v">${sf(m.p)}</span></div><div class="mdet-row"><span class="k">Actual</span><span class="v">${sf(m.c)}</span></div><div class="mdet-row"><span class="k">Venta</span><span class="diff${d<0?' neg':''}">${sf(d)}</span></div></div>`;});
+    t.machines.glp.forEach((m,i)=>{const d=m.c-m.p;html+=`<div class="mdet-card"><div class="mdet-title">Maq. GLP ${i+1}</div><div class="mdet-row"><span class="k">Anterior</span><span class="v">${fmt(m.p)}</span></div><div class="mdet-row"><span class="k">Actual</span><span class="v">${fmt(m.c)}</span></div><div class="mdet-row"><span class="k">Venta</span><span class="diff${d<0?' neg':''}">${fmt(d)}</span></div></div>`;});
     html+=`</div>`;
   }
   html+=`</div>`; return html;
 }
-// ─── EXPORT MODAL ───────────────────────────────────
-window.abrirModalExport = function(){
-  // Populate sede select
-  const sel=document.getElementById('exp-sede');
-  sel.innerHTML='<option value="TODAS">Todas las sedes</option>';
-  S.activeSedes.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;sel.appendChild(o);});
-
-  // Collect unique month keys and quincena keys from existing turnos
-  const mesKeys=new Set(), quincKeys=new Set();
-  S.turnos.forEach(t=>{
-    if(!t.fecha)return;
-    const [y,m]=t.fecha.split('-');
-    mesKeys.add(`${y}-${m}`);
-    quincKeys.add(getQuincenaKey(t.fecha));
-  });
-
-  // Populate mes select
-  const mSel=document.getElementById('exp-mes');
-  mSel.innerHTML='';
-  [...mesKeys].sort().reverse().forEach(k=>{
-    const [y,m]=k.split('-');
-    const label=new Date(Number(y),Number(m)-1,1).toLocaleString('es-PE',{month:'long',year:'numeric'});
-    const o=document.createElement('option');o.value=k;o.textContent=label.charAt(0).toUpperCase()+label.slice(1);
-    mSel.appendChild(o);
-  });
-
-  // Populate quincena select
-  const qSel=document.getElementById('exp-quinc');
-  qSel.innerHTML='';
-  [...quincKeys].sort().reverse().forEach(k=>{
-    const o=document.createElement('option');o.value=k;o.textContent=getQuincenaLabel(k);
-    qSel.appendChild(o);
-  });
-
-  onExpTipo();
-  const modal=document.getElementById('export-modal');
-  modal.style.display='flex';
-};
-window.cerrarModalExport=function(){
-  document.getElementById('export-modal').style.display='none';
-};
-window.onExpTipo=function(){
-  const v=document.querySelector('input[name="exp-tipo"]:checked')?.value||'todo';
-  document.getElementById('exp-mes-row').style.display=v==='mes'?'block':'none';
-  document.getElementById('exp-quinc-row').style.display=v==='quinc'?'block':'none';
-  // Update label styles
-  ['todo','mes','quinc'].forEach(t=>{
-    const lbl=document.getElementById('lbl-tipo-'+t);
-    const active=v===t;
-    lbl.style.borderColor=active?'var(--accent)':'var(--border)';
-    lbl.style.color=active?'var(--accent)':'var(--text2)';
-  });
-};
-
-// ─── EXCEL GENERATION (SheetJS) ─────────────────────
-window.generarExcel = function(){
-  if(typeof XLSX==='undefined'){toast('⚠️ Cargando librerías… inténtalo de nuevo en 2 seg.',true);return;}
-  const tipo=document.querySelector('input[name="exp-tipo"]:checked')?.value||'todo';
-  const sede=document.getElementById('exp-sede').value;
-  const mesKey=document.getElementById('exp-mes').value;
-  const quincKey=document.getElementById('exp-quinc').value;
-
-  // ── Filter turnos ──
-  let rows=S.turnos.filter(t=>{
-    if(sede!=='TODAS'&&t.sede!==sede) return false;
-    if(tipo==='mes'){const [y,m]=t.fecha.split('-');return `${y}-${m}`===mesKey;}
-    if(tipo==='quinc') return getQuincenaKey(t.fecha)===quincKey;
-    return true;
-  });
-  rows=[...rows].sort((a,b)=>a.fecha.localeCompare(b.fecha));
-
-  if(!rows.length){toast('⚠️ No hay datos para ese período/sede',true);return;}
-
-  const sf=(v)=>Number(v)||0;
-  const safeNum=(v)=>(v!==null&&v!==undefined)?Number(v):null;
-
-  // ─────────────────────────────────────────
-  // HOJA 1: HISTORIAL
-  // ─────────────────────────────────────────
-  const HEADER_HIST=['Fecha','Quincena','Sede','Turno','Enc. GLP','Enc. Líquido',
-    'Total Líquido','Total GLP','Total Turno','Diff/Balance','Diff GLP','Modo'];
-
-  const histData=rows.map(t=>{
-    const qk=getQuincenaKey(t.fecha);
-    const dL=safeNum(t.diffL), dG=safeNum(t.diffG);
-    return [
-      t.fecha,
-      getQuincenaShort(qk),
-      t.sede,
-      t.turno,
-      t.encGlp||'',
-      t.solo?'= GLP':(t.encLiq||''),
-      sf(t.liqTotal), sf(t.glpTotal), sf(t.total),
-      dL, dG!==null&&!t.solo?dG:null,
-      t.solo?'Único':'Normal'
-    ];
-  });
-
-  const ws1Data=[HEADER_HIST,...histData];
-  const ws1=XLSX.utils.aoa_to_sheet(ws1Data);
-
-  // Column widths
-  ws1['!cols']=[
-    {wch:12},{wch:16},{wch:14},{wch:10},{wch:16},{wch:16},
-    {wch:16},{wch:14},{wch:14},{wch:14},{wch:12},{wch:10}
-  ];
-
-  // ── Colors ──
-  // Header: dark yellow bg, white text, bold
-  const HEADER_FILL={patternType:'solid',fgColor:{rgb:'B8860B'}}; // dark goldenrod
-  const HEADER_FONT={bold:true,color:{rgb:'FFFFFF'},name:'Calibri',sz:11};
-  const HEADER_BORDER={top:{style:'thin',color:{rgb:'888800'}},bottom:{style:'thin',color:{rgb:'888800'}},left:{style:'thin',color:{rgb:'888800'}},right:{style:'thin',color:{rgb:'888800'}}};
-
-  const ROW_FILL_ODD ={patternType:'solid',fgColor:{rgb:'FFFDE7'}}; // very light yellow
-  const ROW_FILL_EVEN={patternType:'solid',fgColor:{rgb:'FFF9C4'}}; // slightly darker yellow
-  const POS_FILL={patternType:'solid',fgColor:{rgb:'C8E6C9'}}; // light green
-  const NEG_FILL={patternType:'solid',fgColor:{rgb:'FFCDD2'}}; // light red
-  const POS_FONT={bold:true,color:{rgb:'1B5E20'},name:'Calibri',sz:10};
-  const NEG_FONT={bold:true,color:{rgb:'B71C1C'},name:'Calibri',sz:10};
-  const NORMAL_FONT={color:{rgb:'333333'},name:'Calibri',sz:10};
-  const BOLD_FONT={bold:true,color:{rgb:'333333'},name:'Calibri',sz:10};
-  const CELL_BORDER={top:{style:'thin',color:{rgb:'DDDDAA'}},bottom:{style:'thin',color:{rgb:'DDDDAA'}},left:{style:'thin',color:{rgb:'DDDDAA'}},right:{style:'thin',color:{rgb:'DDDDAA'}}};
-
-  const colLetters='ABCDEFGHIJKL'.split('');
-
-  // Style header row
-  colLetters.forEach((c,ci)=>{
-    const cellRef=c+'1';
-    if(!ws1[cellRef]) ws1[cellRef]={t:'s',v:HEADER_HIST[ci]};
-    ws1[cellRef].s={fill:HEADER_FILL,font:HEADER_FONT,border:HEADER_BORDER,alignment:{horizontal:'center',vertical:'center',wrapText:true}};
-  });
-
-  // Style data rows
-  histData.forEach((row,ri)=>{
-    const excelRow=ri+2; // 1=header, data starts at 2
-    const isOdd=ri%2===0;
-    const baseFill=isOdd?ROW_FILL_ODD:ROW_FILL_EVEN;
-
-    colLetters.forEach((c,ci)=>{
-      const cellRef=c+excelRow;
-      if(!ws1[cellRef]) return;
-      const val=row[ci];
-      let fill=baseFill, font=NORMAL_FONT;
-
-      // Diff columns (index 9 = Diff/Balance, index 10 = Diff GLP)
-      if((ci===9||ci===10)&&val!==null&&val!==undefined&&val!==''){
-        const n=Number(val);
-        if(n>0){fill=POS_FILL;font=POS_FONT;}
-        else if(n<0){fill=NEG_FILL;font=NEG_FONT;}
-      }
-      // Total column bold
-      if(ci===8) font=BOLD_FONT;
-      // Numeric formatting
-      const numCols=[6,7,8,9,10];
-      if(numCols.includes(ci)&&val!==null&&val!==undefined){
-        ws1[cellRef].t='n';
-        ws1[cellRef].z='#,##0.00';
-      }
-      ws1[cellRef].s={fill,font,border:CELL_BORDER,alignment:{horizontal:numCols.includes(ci)?'right':'center',vertical:'center'}};
-    });
-  });
-
-  // Freeze header row
-  ws1['!freeze']={xSplit:0,ySplit:1};
-
-  // ─────────────────────────────────────────
-  // HOJA 2: DESCUENTOS
-  // ─────────────────────────────────────────
-  // Build worker balances for the filtered period
-  const W={};
-  rows.forEach(t=>{
-    const addW=(name,diff,qk)=>{
-      const dv=(diff!==null&&diff!==undefined)?Number(diff):null;
-      if(!name||dv===null)return;
-      if(!W[name])W[name]={sede:t.sede,faltante:0,sobrante:0,turnos:0,quincenas:new Set()};
-      W[name].turnos++;
-      W[name].quincenas.add(qk||getQuincenaKey(t.fecha));
-      if(dv<0)W[name].faltante+=dv; else if(dv>0)W[name].sobrante+=dv;
-    };
-    const qk=getQuincenaKey(t.fecha);
-    if(t.solo){addW(t.encGlp,t.diffL,qk);}
-    else{addW(t.encLiq,t.diffL,qk);addW(t.encGlp,t.diffG,qk);}
-  });
-
-  const HEADER_DESC=['Trabajador','Sede','Quincenas','Turnos','Total Faltante','Total Sobrante','Balance'];
-  const descData=Object.entries(W).sort(([a],[b])=>a.localeCompare(b)).map(([name,d])=>{
-    const bal=d.faltante+d.sobrante;
-    return[name, d.sede, [...d.quincenas].sort().map(k=>getQuincenaShort(k)).join(' | '),
-      d.turnos, d.faltante, d.sobrante, bal];
-  });
-
-  const ws2Data=[HEADER_DESC,...descData];
-  const ws2=XLSX.utils.aoa_to_sheet(ws2Data);
-  ws2['!cols']=[{wch:18},{wch:14},{wch:30},{wch:9},{wch:16},{wch:16},{wch:14}];
-
-  const HEADER_FILL2={patternType:'solid',fgColor:{rgb:'795548'}}; // brown
-  const HEADER_FONT2={bold:true,color:{rgb:'FFFFFF'},name:'Calibri',sz:11};
-
-  'ABCDEFG'.split('').forEach((c,ci)=>{
-    const cellRef=c+'1';
-    if(!ws2[cellRef]) ws2[cellRef]={t:'s',v:HEADER_DESC[ci]};
-    ws2[cellRef].s={fill:HEADER_FILL2,font:HEADER_FONT2,border:HEADER_BORDER,alignment:{horizontal:'center',vertical:'center'}};
-  });
-
-  descData.forEach((row,ri)=>{
-    const excelRow=ri+2;
-    const isOdd=ri%2===0;
-    'ABCDEFG'.split('').forEach((c,ci)=>{
-      const cellRef=c+excelRow;
-      if(!ws2[cellRef])return;
-      const val=row[ci];
-      let fill=isOdd?ROW_FILL_ODD:ROW_FILL_EVEN, font=NORMAL_FONT;
-      // Balance col (index 6) and faltante (4) and sobrante (5)
-      if((ci===4||ci===5||ci===6)&&val!==null){
-        const n=Number(val);
-        if(n>0){fill=POS_FILL;font=POS_FONT;}
-        else if(n<0){fill=NEG_FILL;font=NEG_FONT;}
-      }
-      if(ci===0) font=BOLD_FONT; // Name bold
-      const numCols=[4,5,6];
-      if(numCols.includes(ci)){ws2[cellRef].t='n';ws2[cellRef].z='#,##0.00';}
-      ws2[cellRef].s={fill,font,border:CELL_BORDER,alignment:{horizontal:numCols.includes(ci)?'right':'left',vertical:'center'}};
-    });
-  });
-
-  // Totals row for descuentos
-  if(descData.length){
-    const totRow=descData.length+2;
-    const totFalt=descData.reduce((s,r)=>s+(Number(r[4])||0),0);
-    const totSobr=descData.reduce((s,r)=>s+(Number(r[5])||0),0);
-    const totBal=totFalt+totSobr;
-    const totData=['TOTAL','','',descData.reduce((s,r)=>s+(Number(r[3])||0),0),totFalt,totSobr,totBal];
-    XLSX.utils.sheet_add_aoa(ws2,[totData],{origin:`A${totRow}`});
-    const TOTAL_FILL={patternType:'solid',fgColor:{rgb:'424242'}};
-    const TOTAL_FONT={bold:true,color:{rgb:'FFFFFF'},name:'Calibri',sz:11};
-    'ABCDEFG'.split('').forEach((c,ci)=>{
-      const cellRef=c+totRow;
-      if(!ws2[cellRef])ws2[cellRef]={t:'s',v:''};
-      ws2[cellRef].s={fill:TOTAL_FILL,font:TOTAL_FONT,border:CELL_BORDER,alignment:{horizontal:[4,5,6].includes(ci)?'right':'left',vertical:'center'}};
-    });
-  }
-
-  ws2['!freeze']={xSplit:0,ySplit:1};
-
-  // ─── Build filename ──
-  let periodLabel='Todo';
-  if(tipo==='mes'){const [y,m]=mesKey.split('-');const mn=new Date(Number(y),Number(m)-1,1).toLocaleString('es-PE',{month:'long'});periodLabel=mn.charAt(0).toUpperCase()+mn.slice(1)+'_'+y;}
-  if(tipo==='quinc') periodLabel=getQuincenaShort(quincKey).replace(' ','_').replace('°','');
-  const sedeLbl=sede==='TODAS'?'TodasSedes':sede;
-  const filename=`GrifoControl_${sedeLbl}_${periodLabel}.xlsx`;
-
-  // ─── Write workbook ──
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws1,'Historial');
-  XLSX.utils.book_append_sheet(wb,ws2,'Descuentos');
-  XLSX.writeFile(wb,filename);
-  cerrarModalExport();
-  toast('✅ Excel descargado: '+filename);
+window.exportarCSV = function(){
+  if(!S.turnos.length){toast('No hay datos',true);return;}
+  const h=['Fecha','Sede','Turno','Enc.GLP','Enc.Liquido','Solo','Total Liq','Total GLP','Total','Diff/Balance','Diff GLP'];
+  const rows=S.turnos.map(t=>[t.fecha,t.sede,t.turno,t.encGlp||'',t.encLiq||'',t.solo?'SI':'NO',
+    t.liqTotal.toFixed(2),t.glpTotal.toFixed(2),t.total.toFixed(2),
+    t.diffL!==null?t.diffL.toFixed(2):'',t.diffG!==null?t.diffG.toFixed(2):'']);
+  const csv=[h,...rows].map(r=>r.join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download='grifo_turnos_'+new Date().toISOString().split('T')[0]+'.csv';
+  a.click();toast('✅ CSV exportado');
 };
 
 // ─── ADMIN — SEDES ──────────────────────────────────
@@ -1652,6 +1329,107 @@ function toast(msg,err,type){
   setTimeout(()=>el.classList.remove('show'),3500);
 }
 
+// ─── PASTE PANEL ────────────────────────────────────
+let pasteTab = 'liq'; // 'liq' | 'glp' | 'both'
+
+window.setPasteTab = function(tab){
+  pasteTab = tab;
+  ['liq','glp','both'].forEach(t=>{
+    document.getElementById('ptab-'+t).classList.toggle('active', t===tab);
+  });
+  onPasteInput();
+};
+
+// Parse raw text: accept spaces, commas, semicolons, tabs, newlines as separators
+function parseNumbers(raw){
+  return raw
+    .replace(/[,;\t]+/g,' ')
+    .split(/\s+/)
+    .map(s=>s.trim())
+    .filter(s=>s!=='' && !isNaN(s.replace(',','.')))
+    .map(s=>parseFloat(s.replace(',','.')));
+}
+
+window.onPasteInput = function(){
+  const raw = document.getElementById('paste-input').value;
+  const nums = parseNumbers(raw);
+  const preview = document.getElementById('paste-preview');
+  const countEl = document.getElementById('paste-count');
+
+  if(!nums.length){
+    preview.classList.remove('visible');
+    countEl.textContent = '';
+    return;
+  }
+
+  // Figure out how many slots we expect
+  const expected = pasteTab==='liq'?LIQ : pasteTab==='glp'?GLP_M : LIQ+GLP_M;
+
+  // Build preview chips
+  let html='';
+  nums.forEach((n,i)=>{
+    const ok = i < expected;
+    html+=`<span style="display:inline-block;margin:1px 3px;padding:1px 6px;border-radius:4px;
+      background:${ok?'rgba(249,115,22,.18)':'rgba(248,113,113,.15)'};
+      color:${ok?'var(--accent)':'var(--red)'};">${n}</span>`;
+  });
+  if(nums.length<expected){
+    for(let i=nums.length;i<expected;i++)
+      html+=`<span style="display:inline-block;margin:1px 3px;padding:1px 6px;border-radius:4px;background:var(--surface3);color:var(--text3);">—</span>`;
+  }
+  preview.innerHTML=html;
+  preview.classList.add('visible');
+
+  const extra = nums.length > expected ? ` (+${nums.length-expected} extra ignorados)` : '';
+  const missing = nums.length < expected ? ` (faltan ${expected-nums.length})` : '';
+  countEl.textContent = `${nums.length}/${expected} valores${extra}${missing}`;
+  countEl.style.color = nums.length===expected?'var(--green)':nums.length>expected?'var(--yellow)':'var(--red)';
+};
+
+window.applyPaste = function(){
+  const raw = document.getElementById('paste-input').value;
+  const nums = parseNumbers(raw);
+  if(!nums.length){ toast('⚠️ No hay números para cargar',true); return; }
+
+  let idx=0;
+  let filled=0;
+
+  if(pasteTab==='liq'||pasteTab==='both'){
+    for(let i=1;i<=LIQ&&idx<nums.length;i++,idx++){
+      const el=document.getElementById(`liq-c-${i}`);
+      if(el){ el.value=nums[idx]; window.onMachine('liq',i); filled++; }
+    }
+  }
+  if(pasteTab==='glp'||pasteTab==='both'){
+    for(let i=1;i<=GLP_M&&idx<nums.length;i++,idx++){
+      const el=document.getElementById(`glp-c-${i}`);
+      if(el){ el.value=nums[idx]; window.onMachine('glp',i); filled++; }
+    }
+  }
+
+  toast(`✅ ${filled} lecturas cargadas`);
+  // Highlight loaded fields briefly
+  const type1=pasteTab==='glp'?[]:['liq'];
+  const type2=pasteTab==='liq'?[]:['glp'];
+  [...type1,...type2].forEach(type=>{
+    const max=type==='liq'?LIQ:GLP_M;
+    for(let i=1;i<=max;i++){
+      const el=document.getElementById(`${type}-c-${i}`);
+      if(el&&el.value!==''){
+        el.style.borderColor='var(--green)';
+        setTimeout(()=>{el.style.borderColor='';},1800);
+      }
+    }
+  });
+};
+
+window.clearPaste = function(){
+  document.getElementById('paste-input').value='';
+  document.getElementById('paste-preview').classList.remove('visible');
+  document.getElementById('paste-preview').innerHTML='';
+  document.getElementById('paste-count').textContent='';
+};
+
 // ─── BOOTSTRAP ──────────────────────────────────────
 // Show login after firebase SDK loads (brief delay)
 setTimeout(()=>{
@@ -1659,16 +1437,6 @@ setTimeout(()=>{
   document.getElementById('login-screen').style.display='flex';
 }, 800);
 
-</script>
-<!-- SheetJS for Excel export -->
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script>
-// Close modal when clicking backdrop
-document.getElementById('export-modal').addEventListener('click',function(e){
-  if(e.target===this) cerrarModalExport();
-});
-// Also need getQuincenaKey/Short/Label available as globals (they're inside module)
-// They are defined in the module scope — expose them
 </script>
 </body>
 </html>
