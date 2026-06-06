@@ -269,57 +269,6 @@ tr:last-child td{border-bottom:none;}
   .enc-grid{grid-template-columns:1fr;}
   .solo-cuadre-grid{grid-template-columns:1fr 1fr;}
 }
-
-/* ══ PASTE PANEL ══ */
-.paste-panel{
-  background:var(--surface2);border:1px solid var(--border);
-  border-radius:10px;padding:14px;margin-bottom:0;
-}
-.paste-panel-title{
-  font-size:.72rem;text-transform:uppercase;letter-spacing:.8px;
-  color:var(--accent);font-weight:700;margin-bottom:10px;
-  display:flex;align-items:center;gap:6px;
-}
-.paste-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;}
-.paste-tab{
-  padding:7px;border:1px solid var(--border);border-radius:7px;
-  background:var(--surface3);color:var(--text2);cursor:pointer;
-  font-family:'Exo 2',sans-serif;font-size:.75rem;font-weight:700;
-  letter-spacing:.5px;text-transform:uppercase;transition:all .2s;text-align:center;
-}
-.paste-tab:hover{border-color:var(--accent);color:var(--accent);}
-.paste-tab.active{background:var(--accent);border-color:var(--accent);color:white;}
-.paste-textarea{
-  width:100%;height:76px;background:var(--surface3);
-  border:1px solid var(--border);border-radius:7px;
-  color:var(--text);padding:9px 11px;
-  font-family:'DM Mono',monospace;font-size:.8rem;
-  outline:none;resize:none;transition:border-color .2s;
-  line-height:1.5;
-}
-.paste-textarea:focus{border-color:var(--accent);}
-.paste-textarea::placeholder{color:var(--text3);}
-.paste-preview{
-  margin-top:8px;padding:8px 10px;background:var(--surface3);
-  border:1px solid var(--border);border-radius:7px;
-  font-family:'DM Mono',monospace;font-size:.72rem;
-  color:var(--text2);max-height:60px;overflow:auto;
-  display:none;line-height:1.6;
-}
-.paste-preview.visible{display:block;}
-.paste-actions{display:flex;gap:8px;margin-top:8px;align-items:center;}
-.btn-paste-apply{
-  flex:1;padding:9px;background:var(--accent);border:none;border-radius:7px;
-  color:white;font-family:'Exo 2',sans-serif;font-weight:700;font-size:.8rem;
-  letter-spacing:.5px;text-transform:uppercase;cursor:pointer;transition:all .2s;
-}
-.btn-paste-apply:hover{background:var(--accent2);}
-.btn-paste-clear{
-  padding:9px 12px;background:none;border:1px solid var(--border);border-radius:7px;
-  color:var(--text3);cursor:pointer;font-size:.8rem;transition:all .2s;
-}
-.btn-paste-clear:hover{border-color:var(--red);color:var(--red);}
-.paste-count{font-size:.72rem;color:var(--text3);white-space:nowrap;}
 </style>
 </head>
 <body>
@@ -419,32 +368,6 @@ tr:last-child td{border-bottom:none;}
           </div>
         </div>
       </div>
-      <!-- PASTE PANEL -->
-      <div class="card" id="paste-card">
-        <div class="paste-panel">
-          <div class="paste-panel-title">⚡ Carga rápida de lecturas</div>
-          <p style="font-size:.72rem;color:var(--text3);margin-bottom:10px;line-height:1.5;">
-            Pega los números separados por espacios, comas o saltos de línea. Se cargan en orden: Líq 1→12, luego GLP 1→2.
-          </p>
-          <!-- Tabs: LIQ only / GLP only / Both -->
-          <div class="paste-tabs">
-            <button class="paste-tab active" id="ptab-liq"  onclick="setPasteTab('liq')">⛽ Solo Líquido</button>
-            <button class="paste-tab"        id="ptab-glp"  onclick="setPasteTab('glp')">🔵 Solo GLP</button>
-            <button class="paste-tab"        id="ptab-both" onclick="setPasteTab('both')" style="grid-column:1/-1;">📋 Líquido + GLP (todos)</button>
-          </div>
-          <textarea class="paste-textarea" id="paste-input"
-            placeholder="Pega aquí los números:&#10;123456 789012 345678 ...&#10;&#10;o uno por línea:&#10;123456&#10;789012"
-            oninput="onPasteInput()"
-            onpaste="setTimeout(onPasteInput,10)"></textarea>
-          <div class="paste-preview" id="paste-preview"></div>
-          <div class="paste-actions">
-            <button class="btn-paste-apply" onclick="applyPaste()">✓ Cargar lecturas</button>
-            <button class="btn-paste-clear" onclick="clearPaste()" title="Limpiar">✕</button>
-            <span class="paste-count" id="paste-count"></span>
-          </div>
-        </div>
-      </div>
-
       <button class="btn-save" id="btn-guardar" onclick="guardarTurno()">💾 Guardar Turno</button>
     </div>
 
@@ -1119,24 +1042,24 @@ window.filterD = function(sede,btn){
   btn.classList.add('active');renderDesc(sede);
 };
 function renderDesc(filter){
+  filter = filter || 'TODAS';
   const grid=document.getElementById('workers-grid');
   if(!S.turnos.length){grid.innerHTML='<div class="empty-state"><div class="icon">💰</div><p>Aún no hay turnos guardados</p></div>';return;}
   const W={};
   S.turnos.forEach(t=>{
     if(filter!=='TODAS'&&t.sede!==filter)return;
+    const addW=(name,diff)=>{
+      const dv=(diff!==null&&diff!==undefined)?Number(diff):null;
+      if(!name||dv===null)return;
+      if(!W[name])W[name]={sede:t.sede,faltante:0,sobrante:0,turnos:0};
+      W[name].turnos++;
+      if(dv<0)W[name].faltante+=dv; else if(dv>0)W[name].sobrante+=dv;
+    };
     if(t.solo){
-      const n=t.encGlp,d=t.diffL;
-      if(!n||d===null||d===undefined)return;
-      if(!W[n])W[n]={sede:t.sede,faltante:0,sobrante:0,turnos:0};
-      W[n].turnos++;
-      if(d<0)W[n].faltante+=d; else if(d>0)W[n].sobrante+=d;
+      addW(t.encGlp, t.diffL);
     } else {
-      [{n:t.encLiq,d:t.diffL},{n:t.encGlp,d:t.diffG}].forEach(({n,d})=>{
-        if(!n||d===null||d===undefined)return;
-        if(!W[n])W[n]={sede:t.sede,faltante:0,sobrante:0,turnos:0};
-        W[n].turnos++;
-        if(d<0)W[n].faltante+=d; else if(d>0)W[n].sobrante+=d;
-      });
+      addW(t.encLiq, t.diffL);
+      addW(t.encGlp, t.diffG);
     }
   });
   if(!Object.keys(W).length){grid.innerHTML='<div class="empty-state"><div class="icon">💰</div><p>Sin datos para esta sede</p></div>';return;}
@@ -1159,15 +1082,19 @@ function renderDesc(filter){
 // ─── HISTORIAL ──────────────────────────────────────
 function buildHistFilter(){
   const sel=document.getElementById('hist-filter');
-  const prev=sel.value;
+  const prev=sel.value||'TODAS';
   sel.innerHTML='<option value="TODAS">Todas las sedes</option>';
   S.activeSedes.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;sel.appendChild(o);});
-  if(prev)sel.value=prev;
+  // Restore previous selection only if it still exists among the options
+  const exists=[...sel.options].some(o=>o.value===prev);
+  sel.value = exists ? prev : 'TODAS';
 }
 let expandedIds=new Set();
 function renderHistorial(){
   const tbody=document.getElementById('hist-tbody');
-  const f=document.getElementById('hist-filter').value;
+  // Always rebuild the filter so new sedes appear immediately
+  buildHistFilter();
+  const f=document.getElementById('hist-filter').value||'TODAS';
   const rows=S.turnos.filter(t=>f==='TODAS'||t.sede===f);
   if(!rows.length){tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:var(--text3);padding:32px;">Sin registros</td></tr>';return;}
   tbody.innerHTML='';
@@ -1178,18 +1105,21 @@ function renderHistorial(){
     if(isEditing)r.classList.add('editing');
     r.id='hr-'+t.id;
     const liqDisp=t.solo?'<span style="color:var(--purple);font-size:.72rem">= GLP</span>':(t.encLiq||'—');
-    const diffLDisp=t.diffL!==null?(t.diffL>=0?'+':'')+fmt(t.diffL):'—';
-    const diffLClass=t.diffL===null?'':t.diffL>=0?'val-pos':'val-neg';
-    const diffGDisp=t.solo?'<span style="color:var(--text3);font-size:.72rem">—</span>':(t.diffG!==null?(t.diffG>=0?'+':'')+fmt(t.diffG):'—');
-    const diffGClass=(!t.solo&&t.diffG!==null)?(t.diffG>=0?'val-pos':'val-neg'):'';
+    // Null-safe diff handling (Firebase omits null fields)
+    const dL=(t.diffL!==null&&t.diffL!==undefined)?Number(t.diffL):null;
+    const dG=(t.diffG!==null&&t.diffG!==undefined)?Number(t.diffG):null;
+    const diffLDisp=dL!==null?(dL>=0?'+':'')+fmt(dL):'—';
+    const diffLClass=dL!==null?(dL>=0?'val-pos':'val-neg'):'';
+    const diffGDisp=t.solo?'<span style="color:var(--text3);font-size:.72rem">—</span>':(dG!==null?(dG>=0?'+':'')+fmt(dG):'—');
+    const diffGClass=(!t.solo&&dG!==null)?(dG>=0?'val-pos':'val-neg'):'';
     r.innerHTML=`
       <td style="color:var(--text);font-weight:600">${t.fecha}</td>
       <td>${t.sede}</td>
       <td><span class="turno-tag ${t.turno==='MAÑANA'?'m':'t'}">${t.turno}</span></td>
       <td style="color:var(--text)">${t.encGlp||'—'}</td>
       <td>${liqDisp}</td>
-      <td>${fmt(t.liqTotal)}</td><td>${fmt(t.glpTotal)}</td>
-      <td style="color:var(--accent);font-weight:600">${fmt(t.total)}</td>
+      <td>${fmt(Number(t.liqTotal)||0)}</td><td>${fmt(Number(t.glpTotal)||0)}</td>
+      <td style="color:var(--accent);font-weight:600">${fmt(Number(t.total)||0)}</td>
       <td class="${diffLClass}">${diffLDisp}</td>
       <td class="${diffGClass}">${diffGDisp}</td>
       <td>${t.solo?'<span style="color:var(--purple)">☝️</span>':'—'}</td>
@@ -1213,23 +1143,24 @@ window.toggleExpand = function(id,e){
   renderHistorial();
 };
 function buildDetailHTML(t){
+  const sf=(v)=>fmt(Number(v)||0);
   let html=`<div style="padding:4px 0"><div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;">`;
   html+=`<div style="background:var(--blue-dim);border:1px solid rgba(56,189,248,.2);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--blue)">💧 Líquido: <strong>${t.encLiq||'—'}</strong>${t.solo?' (único)':''}</div>`;
   html+=`<div style="background:var(--purple-dim);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--purple)">🔵 GLP: <strong>${t.encGlp||'—'}</strong></div>`;
-  if(t.solo&&(t.soloEnt||t.entL)) html+=`<div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--text2)">☝️ Entregó (total): <strong style="color:var(--text);font-family:'DM Mono',monospace">${fmt(t.soloEnt||t.entL)}</strong></div>`;
+  if(t.solo&&(t.soloEnt||t.entL)) html+=`<div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--text2)">☝️ Entregó (total): <strong style="color:var(--text);font-family:'DM Mono',monospace">${sf(t.soloEnt||t.entL)}</strong></div>`;
   else{
-    if(t.entL>0) html+=`<div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--text2)">💧 Entregó Líq: <strong style="color:var(--text);font-family:'DM Mono',monospace">${fmt(t.entL)}</strong></div>`;
-    if(t.entG>0) html+=`<div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--text2)">🔵 Entregó GLP: <strong style="color:var(--text);font-family:'DM Mono',monospace">${fmt(t.entG)}</strong></div>`;
+    if(Number(t.entL)>0) html+=`<div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--text2)">💧 Entregó Líq: <strong style="color:var(--text);font-family:'DM Mono',monospace">${sf(t.entL)}</strong></div>`;
+    if(Number(t.entG)>0) html+=`<div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:.8rem;color:var(--text2)">🔵 Entregó GLP: <strong style="color:var(--text);font-family:'DM Mono',monospace">${sf(t.entG)}</strong></div>`;
   }
   html+=`</div>`;
   if(t.machines&&t.machines.liq&&t.machines.liq.length){
     html+=`<div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:8px;font-weight:600">⛽ Lecturas Líquido</div><div class="machines-detail-grid">`;
-    t.machines.liq.forEach((m,i)=>{const d=m.c-m.p;html+=`<div class="mdet-card"><div class="mdet-title">Maq. LIQ ${i+1}</div><div class="mdet-row"><span class="k">Anterior</span><span class="v">${fmt(m.p)}</span></div><div class="mdet-row"><span class="k">Actual</span><span class="v">${fmt(m.c)}</span></div><div class="mdet-row"><span class="k">Venta</span><span class="diff${d<0?' neg':''}">${fmt(d)}</span></div></div>`;});
+    t.machines.liq.forEach((m,i)=>{const d=(Number(m.c)||0)-(Number(m.p)||0);html+=`<div class="mdet-card"><div class="mdet-title">Maq. LIQ ${i+1}</div><div class="mdet-row"><span class="k">Anterior</span><span class="v">${sf(m.p)}</span></div><div class="mdet-row"><span class="k">Actual</span><span class="v">${sf(m.c)}</span></div><div class="mdet-row"><span class="k">Venta</span><span class="diff${d<0?' neg':''}">${sf(d)}</span></div></div>`;});
     html+=`</div>`;
   }
   if(t.machines&&t.machines.glp&&t.machines.glp.length){
     html+=`<div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin:12px 0 8px;font-weight:600">🔵 Lecturas GLP</div><div class="machines-detail-grid">`;
-    t.machines.glp.forEach((m,i)=>{const d=m.c-m.p;html+=`<div class="mdet-card"><div class="mdet-title">Maq. GLP ${i+1}</div><div class="mdet-row"><span class="k">Anterior</span><span class="v">${fmt(m.p)}</span></div><div class="mdet-row"><span class="k">Actual</span><span class="v">${fmt(m.c)}</span></div><div class="mdet-row"><span class="k">Venta</span><span class="diff${d<0?' neg':''}">${fmt(d)}</span></div></div>`;});
+    t.machines.glp.forEach((m,i)=>{const d=(Number(m.c)||0)-(Number(m.p)||0);html+=`<div class="mdet-card"><div class="mdet-title">Maq. GLP ${i+1}</div><div class="mdet-row"><span class="k">Anterior</span><span class="v">${sf(m.p)}</span></div><div class="mdet-row"><span class="k">Actual</span><span class="v">${sf(m.c)}</span></div><div class="mdet-row"><span class="k">Venta</span><span class="diff${d<0?' neg':''}">${sf(d)}</span></div></div>`;});
     html+=`</div>`;
   }
   html+=`</div>`; return html;
@@ -1237,9 +1168,10 @@ function buildDetailHTML(t){
 window.exportarCSV = function(){
   if(!S.turnos.length){toast('No hay datos',true);return;}
   const h=['Fecha','Sede','Turno','Enc.GLP','Enc.Liquido','Solo','Total Liq','Total GLP','Total','Diff/Balance','Diff GLP'];
+  const safeFixed=(v)=>(v!==null&&v!==undefined)?Number(v).toFixed(2):'';
   const rows=S.turnos.map(t=>[t.fecha,t.sede,t.turno,t.encGlp||'',t.encLiq||'',t.solo?'SI':'NO',
-    t.liqTotal.toFixed(2),t.glpTotal.toFixed(2),t.total.toFixed(2),
-    t.diffL!==null?t.diffL.toFixed(2):'',t.diffG!==null?t.diffG.toFixed(2):'']);
+    Number(t.liqTotal||0).toFixed(2),Number(t.glpTotal||0).toFixed(2),Number(t.total||0).toFixed(2),
+    safeFixed(t.diffL),safeFixed(t.diffG)]);
   const csv=[h,...rows].map(r=>r.join(',')).join('\n');
   const a=document.createElement('a');
   a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
@@ -1328,107 +1260,6 @@ function toast(msg,err,type){
   el.className='toast show'+(err?' error':type==='warn'?' warn':'');
   setTimeout(()=>el.classList.remove('show'),3500);
 }
-
-// ─── PASTE PANEL ────────────────────────────────────
-let pasteTab = 'liq'; // 'liq' | 'glp' | 'both'
-
-window.setPasteTab = function(tab){
-  pasteTab = tab;
-  ['liq','glp','both'].forEach(t=>{
-    document.getElementById('ptab-'+t).classList.toggle('active', t===tab);
-  });
-  onPasteInput();
-};
-
-// Parse raw text: accept spaces, commas, semicolons, tabs, newlines as separators
-function parseNumbers(raw){
-  return raw
-    .replace(/[,;\t]+/g,' ')
-    .split(/\s+/)
-    .map(s=>s.trim())
-    .filter(s=>s!=='' && !isNaN(s.replace(',','.')))
-    .map(s=>parseFloat(s.replace(',','.')));
-}
-
-window.onPasteInput = function(){
-  const raw = document.getElementById('paste-input').value;
-  const nums = parseNumbers(raw);
-  const preview = document.getElementById('paste-preview');
-  const countEl = document.getElementById('paste-count');
-
-  if(!nums.length){
-    preview.classList.remove('visible');
-    countEl.textContent = '';
-    return;
-  }
-
-  // Figure out how many slots we expect
-  const expected = pasteTab==='liq'?LIQ : pasteTab==='glp'?GLP_M : LIQ+GLP_M;
-
-  // Build preview chips
-  let html='';
-  nums.forEach((n,i)=>{
-    const ok = i < expected;
-    html+=`<span style="display:inline-block;margin:1px 3px;padding:1px 6px;border-radius:4px;
-      background:${ok?'rgba(249,115,22,.18)':'rgba(248,113,113,.15)'};
-      color:${ok?'var(--accent)':'var(--red)'};">${n}</span>`;
-  });
-  if(nums.length<expected){
-    for(let i=nums.length;i<expected;i++)
-      html+=`<span style="display:inline-block;margin:1px 3px;padding:1px 6px;border-radius:4px;background:var(--surface3);color:var(--text3);">—</span>`;
-  }
-  preview.innerHTML=html;
-  preview.classList.add('visible');
-
-  const extra = nums.length > expected ? ` (+${nums.length-expected} extra ignorados)` : '';
-  const missing = nums.length < expected ? ` (faltan ${expected-nums.length})` : '';
-  countEl.textContent = `${nums.length}/${expected} valores${extra}${missing}`;
-  countEl.style.color = nums.length===expected?'var(--green)':nums.length>expected?'var(--yellow)':'var(--red)';
-};
-
-window.applyPaste = function(){
-  const raw = document.getElementById('paste-input').value;
-  const nums = parseNumbers(raw);
-  if(!nums.length){ toast('⚠️ No hay números para cargar',true); return; }
-
-  let idx=0;
-  let filled=0;
-
-  if(pasteTab==='liq'||pasteTab==='both'){
-    for(let i=1;i<=LIQ&&idx<nums.length;i++,idx++){
-      const el=document.getElementById(`liq-c-${i}`);
-      if(el){ el.value=nums[idx]; window.onMachine('liq',i); filled++; }
-    }
-  }
-  if(pasteTab==='glp'||pasteTab==='both'){
-    for(let i=1;i<=GLP_M&&idx<nums.length;i++,idx++){
-      const el=document.getElementById(`glp-c-${i}`);
-      if(el){ el.value=nums[idx]; window.onMachine('glp',i); filled++; }
-    }
-  }
-
-  toast(`✅ ${filled} lecturas cargadas`);
-  // Highlight loaded fields briefly
-  const type1=pasteTab==='glp'?[]:['liq'];
-  const type2=pasteTab==='liq'?[]:['glp'];
-  [...type1,...type2].forEach(type=>{
-    const max=type==='liq'?LIQ:GLP_M;
-    for(let i=1;i<=max;i++){
-      const el=document.getElementById(`${type}-c-${i}`);
-      if(el&&el.value!==''){
-        el.style.borderColor='var(--green)';
-        setTimeout(()=>{el.style.borderColor='';},1800);
-      }
-    }
-  });
-};
-
-window.clearPaste = function(){
-  document.getElementById('paste-input').value='';
-  document.getElementById('paste-preview').classList.remove('visible');
-  document.getElementById('paste-preview').innerHTML='';
-  document.getElementById('paste-count').textContent='';
-};
 
 // ─── BOOTSTRAP ──────────────────────────────────────
 // Show login after firebase SDK loads (brief delay)
