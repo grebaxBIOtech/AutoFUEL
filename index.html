@@ -793,16 +793,27 @@ window.importFromJSON = async function(){
   }
 };
 
-// ─── AUTH: Firebase Authentication + roles en Realtime Database ───
+// ─── AUTH: Firebase Authentication con dos UID autorizados ───
+// Esta lista solo controla la interfaz: Firebase Rules controla la seguridad real.
+const UID_ADMIN = 'dvkj4Uurordz5Aad97XKg4jJmBt1';
+const UID_LECTURA = 'PgEJ4ylc9ef4pgLieBkze0sTyGG3';
+function accessLevel(user) {
+  if (!user) return null;
+  if (user.uid === UID_ADMIN) return 'admin';
+  if (user.uid === UID_LECTURA) return 'readonly';
+  return null;
+}
 let AUTH = { level: null };
 let authEpoch = 0;
+let pendingAuthError = '';
 
 function showLogin(errorText = ''){
   document.getElementById('loading-overlay').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('app-wrapper').style.display = 'none';
   document.getElementById('pw-input').value = '';
-  document.getElementById('login-error').textContent = errorText;
+  document.getElementById('login-error').textContent = errorText || pendingAuthError;
+  pendingAuthError = '';
 }
 
 window.tryLogin = async function(){
@@ -1706,12 +1717,12 @@ onAuthStateChanged(auth, async user => {
     return;
   }
   try{
-    // La ruta roles/<UID> es de solo lectura para el propio usuario.
-    const role = await fbGet('roles/' + user.uid);
+    // El nivel se obtiene del UID autenticado; no se requiere crear /roles.
+    const role = accessLevel(user);
     if(epoch !== authEpoch) return;
-    if(role !== 'admin' && role !== 'readonly'){
+    if(!role){
+      pendingAuthError = 'Este usuario no está autorizado para entrar a AutoFUEL.';
       await signOut(auth);
-      showLogin('Tu cuenta no tiene permiso de acceso. Solicita que te asignen un rol.');
       return;
     }
     AUTH.level = role;
